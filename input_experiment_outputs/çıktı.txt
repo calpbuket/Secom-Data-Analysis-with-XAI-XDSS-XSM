@@ -1,0 +1,67 @@
+**********************************************************************
+  SECOM - EKSİK VERİ STRATEJİLERİ KARŞILAŞTIRMASI (HIZLANDIRILMIŞ)
+**********************************************************************
+======================================================================
+VERİ HAZIRLAMA
+======================================================================
+
+[1] Veri yüklendi: 1567 satır, 592 sütun
+[2] 'Time' sütunu drop edildi
+[3] Hedef değişken ayrıldı: 590 feature
+[4] %40+ eksik olan 32 sütun drop edildi
+    Kalan sütun sayısı: 558
+[5] Sabit 116 sütun drop edildi
+    Final sütun sayısı: 442
+
+[6] Sınıf dağılımı (encoded):
+    Pass (0): 1463 (93.36%)
+    Fail (1): 104 (6.64%)
+
+[7] scale_pos_weight hesaplandı: 14.07
+
+======================================================================
+MODEL DEĞERLENDİRME
+======================================================================
+
+[MEDIAN] Pipeline değerlendiriliyor...
+    Fold 1/5 tamamlandı (0.8s)
+    Fold 2/5 tamamlandı (0.7s)
+    Fold 3/5 tamamlandı (0.7s)
+    Fold 4/5 tamamlandı (0.7s)
+    Fold 5/5 tamamlandı (0.7s)
+    ✓ Tamamlandı (3.6s) - F1_macro: 0.5665 (±0.0348)
+
+[KNN] Pipeline değerlendiriliyor...
+    Fold 1/5 tamamlandı (1.3s)
+    Fold 2/5 tamamlandı (1.3s)
+    Fold 3/5 tamamlandı (1.3s)
+    Fold 4/5 tamamlandı (1.2s)
+    Fold 5/5 tamamlandı (1.3s)
+    ✓ Tamamlandı (6.3s) - F1_macro: 0.5800 (±0.0299)
+
+[ITERATIVE] Pipeline değerlendiriliyor...
+    Fold 1/5 tamamlandı (95.2s)
+    Fold 2/5 tamamlandı (93.4s)
+    Fold 3/5 tamamlandı (96.5s)
+    Fold 4/5 tamamlandı (97.0s)
+    Fold 5/5 tamamlandı (97.4s)
+    ✓ Tamamlandı (479.5s) - F1_macro: 0.5800 (±0.0477)
+
+======================================================================
+SONUÇ TABLOSU
+======================================================================
+
+
+  Senaryo          Imputer F1_macro_mean F1_macro_std F1_fail_mean Recall_fail_mean ROC_AUC_mean PR_AUC_mean
+   median    SimpleImputer        0.5665       0.0348       0.1771           0.1348       0.7021      0.1781
+      knn       KNNImputer        0.5800       0.0299       0.2024           0.1533       0.6873      0.1621
+iterative IterativeImputer        0.5800       0.0477       0.2038           0.1529       0.7106      0.1891
+
+----------------------------------------------------------------------
+EN İYİ SONUÇLAR:
+----------------------------------------------------------------------
+  F1_macro_mean: iterative (0.5800)
+  F1_fail_mean: iterative (0.2038)
+  Recall_fail_mean: knn (0.1533)
+  ROC_AUC_mean: iterative (0.7106)
+  PR_AUC_mean: iterative (0.1891)

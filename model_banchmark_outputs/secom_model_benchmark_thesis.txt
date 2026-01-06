@@ -1,0 +1,42 @@
+
+### 4.X.X Model Karşılaştırma Analizi
+
+Optimal ön işleme pipeline'ı (IterativeImputer → RobustScaler → Top-100 Feature 
+Selection → SMOTE) belirlendikten sonra, dört farklı sınıflandırma algoritması 
+karşılaştırılmıştır: Logistic Regression, Random Forest, XGBoost ve LightGBM.
+
+**Deney Tasarımı:**
+Tüm modeller aynı pipeline üzerinde 5-katlı stratified cross-validation ile 
+değerlendirilmiştir. Dengesiz veri setinin doğası gereği, PR-AUC ve Fail sınıfı 
+için F1-score öncelikli metrikler olarak belirlenmiştir.
+
+**Sonuçlar:**
+  • LightGBM (PR-AUC: 0.2536)
+  • RandomForest (PR-AUC: 0.2446)
+  • XGBoost (PR-AUC: 0.2107)
+  • LogisticRegression (PR-AUC: 0.1728)
+
+**En İyi Model: RandomForest**
+Bu model, PR-AUC değeri 0.2446 (±0.0607) 
+ile en yüksek performansı göstermiştir. Fail sınıfı için:
+- F1-score: 0.2049
+- Recall: 0.1548
+- Precision: 0.3250
+
+**Tartışma:**
+
+
+
+Yarı iletken üretim sürecinde hatalı ürün tespiti kritik öneme sahiptir; 
+kaçırılan her hatalı ürün (False Negative) önemli maliyet ve kalite sorunlarına 
+yol açabilir. Bu nedenle, yüksek Recall değeri elde eden RandomForest modeli 
+operasyonel uygulamalar için önerilmektedir.
+
+**Tablo 4.X: Model Karşılaştırma Sonuçları**
+
+| Model | F1_fail | Recall | Precision | PR-AUC | ROC-AUC |
+|-------|---------|--------|-----------|--------|---------|
+| LogisticRegression | 0.2381 | 0.4990 | 0.1572 | 0.1728 | 0.7345 |
+| RandomForest | 0.2049 | 0.1548 | 0.3250 | 0.2446 | 0.7615 |
+| XGBoost | 0.1526 | 0.1062 | 0.3241 | 0.2107 | 0.7509 |
+| LightGBM | 0.1770 | 0.1157 | 0.4545 | 0.2536 | 0.7548 |

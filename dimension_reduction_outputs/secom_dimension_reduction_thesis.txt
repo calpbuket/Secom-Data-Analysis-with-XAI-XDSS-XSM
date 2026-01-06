@@ -1,0 +1,28 @@
+
+### 4.X.X Boyut Azaltma Tekniklerinin Değerlendirilmesi
+
+SECOM veri setinin yüksek boyutluluğu (442 feature) nedeniyle, model performansı 
+üzerindeki etkisini değerlendirmek amacıyla iki farklı boyut azaltma tekniği 
+incelenmiştir: Principal Component Analysis (PCA) ve XGBoost tabanlı Feature Selection.
+
+**PCA Analizi:**
+Üç farklı varyans açıklama oranı (%90, %95, %99) test edilmiştir. 
+90% varyans seviyesi 1 bileşen ile 
+en iyi sonucu vermiş, PR-AUC değeri 0.1120 olarak ölçülmüştür.
+Baseline'a göre değişim: -0.0834
+
+**Feature Selection Analizi:**
+XGBoost feature importance skorlarına göre en önemli 50, 100 ve 150 feature 
+seçilerek deneyler yapılmıştır. Top-100 feature ile 
+PR-AUC 0.2416 değerine ulaşılmıştır.
+Baseline'a göre değişim: +0.0462
+
+**Sonuç:**
+Boyut azaltma teknikleri baseline performansını iyileştirmiştir.
+Feature Selection yöntemi 
+daha yüksek PR-AUC değeri elde etmiştir. Ancak, dengesiz veri setlerinde küçük 
+performans farklarının istatistiksel anlamlılığı göz önünde bulundurulmalıdır.
+
+Feature selection yönteminin yorumlanabilirlik avantajı, üretim ortamında hangi 
+sensörlerin kritik olduğunun belirlenmesi açısından değerlidir. Bu nedenle, 
+operasyonel uygulamalar için feature selection tercih edilebilir.

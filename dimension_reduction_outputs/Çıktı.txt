@@ -1,0 +1,164 @@
+**********************************************************************
+  SECOM - BOYUT AZALTMA ANALİZİ (AŞAMA 3)
+  Pipeline: IterativeImputer → RobustScaler → [PCA/FS] → SMOTE → XGBoost
+**********************************************************************
+======================================================================
+VERİ HAZIRLAMA
+======================================================================
+
+[1] Veri yüklendi: 1567 satır, 592 sütun
+[2] Final boyut: 442 feature
+[3] Sınıf dağılımı: Pass=1463, Fail=104
+
+[*] Feature importance hesaplanıyor...
+[*] Top 10 feature:
+    1. 59: 0.0301
+    2. 302: 0.0220
+    3. 196: 0.0193
+    4. 207: 0.0166
+    5. 438: 0.0153
+    6. 486: 0.0153
+    7. 310: 0.0130
+    8. 95: 0.0124
+    9. 64: 0.0123
+    10. 543: 0.0117
+[*] Feature importance kaydedildi: secom_feature_importance.csv
+
+======================================================================
+A) PCA DENEYİ
+Pipeline: Imputer → Scaler → PCA → SMOTE → XGBoost
+======================================================================
+
+--- PCA Varyans: 90% ---
+  Fold 1/5 ✓ (n_components=2)
+  Fold 2/5 ✓ (n_components=1)
+  Fold 3/5 ✓ (n_components=2)
+  Fold 4/5 ✓ (n_components=2)
+  Fold 5/5 ✓ (n_components=1)
+  → F1_fail: 0.1588 | Recall: 0.4133 | PR-AUC: 0.1120
+  → Süre: 5142.5s
+
+--- PCA Varyans: 95% ---
+  Fold 1/5 ✓ (n_components=2)
+  Fold 2/5 ✓ (n_components=2)
+  Fold 3/5 ✓ (n_components=2)
+  Fold 4/5 ✓ (n_components=2)
+  Fold 5/5 ✓ (n_components=2)
+  → F1_fail: 0.1478 | Recall: 0.3562 | PR-AUC: 0.1009
+  → Süre: 4106.6s
+
+--- PCA Varyans: 99% ---
+  Fold 1/5 ✓ (n_components=2)
+  Fold 2/5 ✓ (n_components=2)
+  Fold 3/5 ✓ (n_components=2)
+  Fold 4/5 ✓ (n_components=2)
+  Fold 5/5 ✓ (n_components=3)
+  → F1_fail: 0.1339 | Recall: 0.3181 | PR-AUC: 0.1060
+  → Süre: 4004.3s
+
+======================================================================
+B) FEATURE SELECTION DENEYİ
+Pipeline: Imputer → Scaler → Top-K Features → SMOTE → XGBoost
+======================================================================
+
+--- Top-50 Features ---
+  Fold 1/5 ✓
+  Fold 2/5 ✓
+  Fold 3/5 ✓
+  Fold 4/5 ✓
+  Fold 5/5 ✓
+  → F1_fail: 0.2085 | Recall: 0.1538 | PR-AUC: 0.2155
+  → Süre: 3863.9s
+
+--- Top-100 Features ---
+  Fold 1/5 ✓
+  Fold 2/5 ✓
+  Fold 3/5 ✓
+  Fold 4/5 ✓
+  Fold 5/5 ✓
+  → F1_fail: 0.1920 | Recall: 0.1252 | PR-AUC: 0.2416
+  → Süre: 4161.8s
+
+--- Top-150 Features ---
+  Fold 1/5 ✓
+  Fold 2/5 ✓
+  Fold 3/5 ✓
+  Fold 4/5 ✓
+  Fold 5/5 ✓
+  → F1_fail: 0.1869 | Recall: 0.1252 | PR-AUC: 0.2252
+  → Süre: 5019.2s
+
+======================================================================
+KARŞILAŞTIRMA RAPORU
+======================================================================
+
+--- BASELINE (442 feature, PCA/FS yok) ---
+  F1_fail: 0.1285
+  Recall_fail: 0.0771
+  PR-AUC: 0.1954
+
+--- A) PCA SONUÇLARI ---
+
+Varyans  Bileşen  F1_fail   Recall   PR-AUC     Süre(s)
+    90%        1 0.158792 0.413333 0.112046 5142.528336
+    95%        2 0.147847 0.356190 0.100926 4106.625806
+    99%        2 0.133941 0.318095 0.105969 4004.299176
+
+  ★ En iyi PCA: 90% (1 bileşen)
+    PR-AUC: 0.1120 (Baseline'dan -0.0834)
+
+--- B) FEATURE SELECTION SONUÇLARI ---
+
+ Features  F1_fail   Recall   PR-AUC     Süre(s)
+       50 0.208546 0.153810 0.215456 3863.902936
+      100 0.191971 0.125238 0.241589 4161.767972
+      150 0.186937 0.125238 0.225195 5019.244730
+
+  ★ En iyi Feature Selection: Top-100 features
+    PR-AUC: 0.2416 (Baseline'dan +0.0462)
+
+----------------------------------------------------------------------
+GENEL KARŞILAŞTIRMA
+----------------------------------------------------------------------
+
+
+             Yöntem  Boyut  F1_fail   Recall   PR-AUC   ΔPR-AUC
+Baseline (442 feat)    442 0.128500 0.077100 0.195400  0.000000
+            PCA 90%      1 0.158792 0.413333 0.112046 -0.083354
+   Top-100 Features    100 0.191971 0.125238 0.241589  0.046189
+
+----------------------------------------------------------------------
+🏆 KAZANAN: Feature Selection (Top-100)
+   PR-AUC: 0.2416
+
+======================================================================
+TEZ İÇİN ÖZET PARAGRAF
+======================================================================
+
+### 4.X.X Boyut Azaltma Tekniklerinin Değerlendirilmesi
+
+SECOM veri setinin yüksek boyutluluğu (442 feature) nedeniyle, model performansı 
+üzerindeki etkisini değerlendirmek amacıyla iki farklı boyut azaltma tekniği 
+incelenmiştir: Principal Component Analysis (PCA) ve XGBoost tabanlı Feature Selection.
+
+**PCA Analizi:**
+Üç farklı varyans açıklama oranı (%90, %95, %99) test edilmiştir. 
+90% varyans seviyesi 1 bileşen ile 
+en iyi sonucu vermiş, PR-AUC değeri 0.1120 olarak ölçülmüştür.
+Baseline'a göre değişim: -0.0834
+
+**Feature Selection Analizi:**
+XGBoost feature importance skorlarına göre en önemli 50, 100 ve 150 feature 
+seçilerek deneyler yapılmıştır. Top-100 feature ile 
+PR-AUC 0.2416 değerine ulaşılmıştır.
+Baseline'a göre değişim: +0.0462
+
+**Sonuç:**
+Boyut azaltma teknikleri baseline performansını iyileştirmiştir.
+Feature Selection yöntemi 
+daha yüksek PR-AUC değeri elde etmiştir. Ancak, dengesiz veri setlerinde küçük 
+performans farklarının istatistiksel anlamlılığı göz önünde bulundurulmalıdır.
+
+Feature selection yönteminin yorumlanabilirlik avantajı, üretim ortamında hangi 
+sensörlerin kritik olduğunun belirlenmesi açısından değerlidir. Bu nedenle, 
+operasyonel uygulamalar için feature selection tercih edilebilir.

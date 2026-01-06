@@ -1,0 +1,616 @@
+================================================================================
+BÖLÜM 1: VERİ KÜMESİ TANITIMI
+================================================================================
+
+📊 Veri Seti Genel Bilgileri:
+   • Satır sayısı (Gözlem): 1,567
+   • Sütun sayısı (Değişken): 592
+   • Sensör sayısı: 590
+
+🎯 Hedef Değişken: 'Pass/Fail'
+   • Veri tipi: int64
+   • Benzersiz değerler: [-1  1]
+   • Hedef değişken türü: Binary (İkili Sınıflandırma)
+   • -1: Hatasız üretim (Pass)
+   •  1: Hatalı üretim (Fail)
+
+📋 Veri Tiplerinin Özeti:
+   • float64: 590 sütun
+   • object: 1 sütun
+   • int64: 1 sütun
+
+📋 Sütun Veri Tipleri (İlk 30):
+Sütun Adı Veri Tipi
+     Time    object
+        0   float64
+        1   float64
+        2   float64
+        3   float64
+        4   float64
+        5   float64
+        6   float64
+        7   float64
+        8   float64
+        9   float64
+       10   float64
+       11   float64
+       12   float64
+       13   float64
+       14   float64
+       15   float64
+       16   float64
+       17   float64
+       18   float64
+       19   float64
+       20   float64
+       21   float64
+       22   float64
+       23   float64
+       24   float64
+       25   float64
+       26   float64
+       27   float64
+       28   float64
+
+📋 İlk 10 Satır (İlk 10 Sütun):
+                  Time        0        1          2          3       4      5         6       7       8
+0  2008-07-19 11:55:00  3030.93  2564.00  2187.7333  1411.1265  1.3602  100.0   97.6133  0.1242  1.5005
+1  2008-07-19 12:32:00  3095.78  2465.14  2230.4222  1463.6606  0.8294  100.0  102.3433  0.1247  1.4966
+2  2008-07-19 13:17:00  2932.61  2559.94  2186.4111  1698.0172  1.5102  100.0   95.4878  0.1241  1.4436
+3  2008-07-19 14:43:00  2988.72  2479.90  2199.0333   909.7926  1.3204  100.0  104.2367  0.1217  1.4882
+4  2008-07-19 15:22:00  3032.24  2502.87  2233.3667  1326.5200  1.5334  100.0  100.3967  0.1235  1.5031
+5  2008-07-19 17:53:00  2946.25  2432.84  2233.3667  1326.5200  1.5334  100.0  100.3967  0.1235  1.5287
+6  2008-07-19 19:44:00  3030.27  2430.12  2230.4222  1463.6606  0.8294  100.0  102.3433  0.1247  1.5816
+7  2008-07-19 19:45:00  3058.88  2690.15  2248.9000  1004.4692  0.7884  100.0  106.2400  0.1185  1.5153
+8  2008-07-19 20:24:00  2967.68  2600.47  2248.9000  1004.4692  0.7884  100.0  106.2400  0.1185  1.5358
+9  2008-07-19 21:35:00  3016.11  2428.37  2248.9000  1004.4692  0.7884  100.0  106.2400  0.1185  1.5381
+
+💾 Bellek Kullanımı: 7.18 MB
+
+================================================================================
+BÖLÜM 2: EKSİK VERİ ANALİZİ
+================================================================================
+
+📊 Genel Eksik Veri İstatistikleri:
+   • Toplam hücre sayısı: 924,530
+   • Toplam eksik değer: 41,951
+   • Genel eksik oran: %4.54
+
+   • Eksik değer içeren sütun: 538
+   • Eksik değer içermeyen sütun: 52
+
+📋 En Çok Eksik Değer İçeren İlk 20 Sütun:
+Sütun  Eksik Sayısı  Eksik Oranı (%)
+  157          1429        91.193363
+  292          1429        91.193363
+  293          1429        91.193363
+  158          1429        91.193363
+  492          1341        85.577537
+  358          1341        85.577537
+   85          1341        85.577537
+  220          1341        85.577537
+  246          1018        64.964901
+  109          1018        64.964901
+  110          1018        64.964901
+  111          1018        64.964901
+  518          1018        64.964901
+  516          1018        64.964901
+  245          1018        64.964901
+  244          1018        64.964901
+  382          1018        64.964901
+  383          1018        64.964901
+  384          1018        64.964901
+  517          1018        64.964901
+
+📊 Eksik Veri Kategorileri:
+   • Yüksek eksiklik (>50%): 28 sütun
+   • Orta eksiklik (20-50%): 4 sütun
+   • Düşük eksiklik (0-20%): 506 sütun
+
+🔗 Eksik Veri ve Hedef Değişken İlişkisi:
+
+   Sınıf Bazında Eksik Değer İstatistikleri:
+   Pass (-1): Ortalama=26.86, Std=13.59
+   Fail (1):  Ortalama=25.46, Std=9.88
+
+   T-Test Sonucu: t=1.0336, p-value=0.3015
+   ✓ İstatistiksel olarak anlamlı fark YOK (p >= 0.05)
+
+------------------------------------------------------------
+📊 Eksik Veri Mekanizması Analizi (MCAR/MAR/MNAR)
+------------------------------------------------------------
+
+   Satır bazında eksik değer aralığı: 4 - 152
+   Satır bazında ortalama eksik: 26.77
+
+   Eksik değer göstergeleri arası ortalama korelasyon: 0.3951
+
+🔬 Bilimsel Yorum - Eksik Veri Yapısı:
+
+   1. MCAR (Missing Completely At Random) DEĞİL:
+      • Bazı sütunlarda %40+'ın üzerinde eksiklik bulunması
+      • Eksik değerlerin belirli sütunlarda yoğunlaşması
+      MCAR varsayımını desteklememektedir.
+   
+   2. MAR (Missing At Random) olasılığı YÜKSEK:
+      • Eksik değerlerin gözlemlenen diğer değişkenlerle ilişkili olması
+      • Sensör arızaları veya ölçüm koşullarına bağlı eksiklik
+      MAR mekanizmasını desteklemektedir.
+   
+   3. MNAR (Missing Not At Random) İHTİMALİ:
+      • Bazı sensörlerin limit değerlerinde kayıt yapamaması
+      • Üretim hatası durumunda sensör çalışmaması
+      MNAR olasılığını düşündürmektedir.
+   
+   ➤ Sonuç: Bu veri seti muhtemelen MAR veya karma bir mekanizma göstermektedir.
+
+
+📋 Önerilen Eksik Veri Stratejileri:
+
+   1. SILME (Deletion):
+      ✓ %50+'dan fazla eksik içeren sütunlar silinebilir
+      ✗ Satır silme önerilmez - veri kaybı çok yüksek olur
+      
+   2. MEAN/MEDIAN IMPUTATION:
+      ✓ Basit ve hızlı uygulama
+      ✗ Varyansı küçültür, korelasyonları bozar
+      
+   3. KNN IMPUTATION:
+      ✓ Gözlemler arası benzerliği kullanır
+      ✓ Multivariate yapıyı korur
+      ✗ Yüksek boyutlu verilerde hesaplama maliyeti
+      
+   4. ITERATIVE IMPUTER (MICE):
+      ✓ MAR varsayımı altında en iyi performans
+      ✓ Değişkenler arası ilişkileri modelleyerek impute eder
+      ✗ Hesaplama süresi uzun
+      
+   ➤ ÖNERİ: %40+ eksik sütunları silmek, kalan için IterativeImputer
+
+
+✓ Görsel kaydedildi: ./eda_outputs/fig1_eksik_veri_analizi.png
+
+================================================================================
+BÖLÜM 3: TANIMLAYICI İSTATİSTİKLER
+================================================================================
+
+📊 Tanımlayıcı İstatistikler Özeti (İlk 20 Sensör):
+Sütun    N    Ortalama     Medyan        Std       Min       Max   Skewness    Kurtosis
+    0 1561 3014.452896 3011.49000  73.621787 2743.2400 3356.3500   0.513163    1.462105
+    1 1560 2495.850231 2499.40500  80.407705 2158.7500 2846.4400  -0.043025    2.230421
+    2 1553 2200.547318 2201.06670  29.513152 2060.6600 2315.2667  -0.305468    2.293680
+    3 1553 1396.376627 1285.21440 441.691640    0.0000 3715.0417   1.709973    4.576276
+    4 1553    4.197013    1.31680  56.355540    0.6815 1114.5366  19.626282  383.212230
+    5 1553  100.000000  100.00000   0.000000  100.0000  100.0000        NaN         NaN
+    6 1553  101.112908  101.51220   6.237214   82.1311  129.2522  -0.106843    2.008920
+    7 1558    0.121822    0.12240   0.008961    0.0000    0.1286 -12.902121  172.592620
+    8 1565    1.462862    1.46160   0.073897    1.1910    1.6564  -0.073706   -0.203396
+    9 1565   -0.000841   -0.00130   0.015116   -0.0534    0.0749   0.330904    0.791475
+   10 1565    0.000146    0.00040   0.009302   -0.0349    0.0530   0.057632    1.505812
+   11 1565    0.964353    0.96580   0.012452    0.6554    0.9848 -10.205307  242.175669
+   12 1565  199.956809  199.53560   3.257276  182.0940  272.0451   7.197823  154.941801
+   13 1564    0.000000    0.00000   0.000000    0.0000    0.0000        NaN         NaN
+   14 1564    9.005371    8.96700   2.796596    2.2493   19.5465   0.169251   -0.006730
+   15 1564  413.086035  412.21910  17.221095  333.4486  824.9271  17.044231  401.143550
+   16 1564    9.907603    9.85175   2.403867    4.4696  102.8677  36.999234 1428.769019
+   17 1564    0.971444    0.97260   0.012062    0.5794    0.9848 -22.148641  712.108808
+   18 1564  190.047354  189.66420   2.781041  169.1774  215.5977   0.195340    7.088185
+   19 1557   12.481034   12.49960   0.217965    9.8773   12.9898  -9.821323  110.334490
+
+📈 Dağılım Özellikleri Analizi:
+   • Normal dağılım gösteren sütunlar (|skew| < 0.5): 99
+   • Hafif çarpık dağılımlar (0.5 <= |skew| < 1): 53
+   • Yüksek çarpık dağılımlar (|skew| >= 1): 322
+
+📋 En Yüksek Çarpıklık Gösteren 10 Sütun:
+Sütun  Ortalama  Medyan  Skewness    Kurtosis
+  390  1.431868 0.87730 39.524898 1560.809446
+  252  4.645115 2.86460 39.522485 1560.681951
+  287  0.367529 0.13895 39.483422 1557.624826
+  152  1.196733 0.46870 39.481699 1557.534113
+  206  0.001281 0.00000 39.471517 1556.000641
+  209  0.029564 0.00000 39.471517 1556.000641
+  347  0.008914 0.00000 39.471517 1556.000641
+  478  0.128123 0.00000 39.471517 1556.000641
+   74  0.002688 0.00000 39.471517 1556.000641
+  342  0.000286 0.00000 39.471517 1556.000641
+
+📊 Kurtosis (Basıklık) Analizi:
+   • Leptokurtik (sivri, >3): 330 sütun
+   • Mesokurtik (normal, -3 ile 3): 144 sütun
+   • Platikurtik (basık, <-3): 0 sütun
+
+🔍 Aykırı Değer Potansiyeli Yüksek Sütunlar (Kurtosis > 10):
+Sütun        Min       Max   Skewness    Kurtosis
+    4     0.6815 1114.5366  19.626282  383.212230
+    7     0.0000    0.1286 -12.902121  172.592620
+   11     0.6554    0.9848 -10.205307  242.175669
+   12   182.0940  272.0451   7.197823  154.941801
+   15   333.4486  824.9271  17.044231  401.143550
+   16     4.4696  102.8677  36.999234 1428.769019
+   17     0.5794    0.9848 -22.148641  712.108808
+   19     9.8773   12.9898  -9.821323  110.334490
+   20     1.1797    1.4534  -2.802372   30.507064
+   21 -7150.2500    0.0000   2.372347   15.197774
+
+📝 YORUM: Tanımlayıcı İstatistikler
+   
+   • Sensör verilerinin büyük çoğunluğu normal dağılım göstermemektedir.
+   • Yüksek skewness değerleri (>5) logaritmik dönüşüm ihtiyacını gösterir.
+   • Yüksek kurtosis değerleri (>10) uç değerlerin varlığına işaret eder.
+   • Ortalama-medyan farkları dağılımların simetrik olmadığını gösterir.
+   • Ölçeklendirme (StandardScaler/RobustScaler) kesinlikle gereklidir.
+
+
+✓ Görsel kaydedildi: ./eda_outputs/fig2_tanimlayici_istatistikler.png
+
+================================================================================
+BÖLÜM 4: HEDEF DEĞİŞKEN ANALİZİ (SINIF DENGESİZLİĞİ)
+================================================================================
+
+📊 Sınıf Dağılımı:
+   • Pass (-1): 1,463 gözlem (%93.36)
+   • Fail (1):  104 gözlem (%6.64)
+
+📊 Dengesizlik Oranı: 14.07:1 (Pass:Fail)
+
+⚠️ SINIF DENGESİZLİĞİ SORUNU:
+   
+   Bu veri setinde ciddi bir sınıf dengesizliği bulunmaktadır:
+   • Hatalı ürünler (Fail) toplam verinin sadece ~%6'sını oluşturur
+   • Bu tür dengesizlik, modelin çoğunluk sınıfına (Pass) aşırı öğrenmesine neden olur
+
+
+📊 METRİK SEÇİMİ AÇIKLAMASI:
+
+   1. ACCURACY (Doğruluk) NEDEN YETERSİZ?
+      • Tüm gözlemleri "Pass" tahmin eden bir model %93+ accuracy elde eder
+      • Bu yanıltıcıdır çünkü hiçbir hatalı ürün tespit edilemez
+      • Üretim hattında kaçırılan her hatalı ürün maliyetli sonuçlar doğurur
+   
+   2. PRECISION (Kesinlik):
+      • Hatalı tahmin edilenlerin ne kadarı gerçekten hatalı?
+      • Yanlış alarm (false positive) maliyetini ölçer
+   
+   3. RECALL (Duyarlılık/Sensitivity):
+      • Gerçek hatalı ürünlerin ne kadarı yakalandı?
+      • Kaçırılan hata (false negative) maliyetini ölçer
+   
+   4. F1-SCORE:
+      • Precision ve Recall'un harmonik ortalaması
+      • Dengesiz sınıflarda tek bir metrik olarak idealdir
+   
+   5. ROC-AUC / PR-AUC:
+      • Sınıf oranlarından bağımsız performans ölçümü
+      • Dengesiz verilerde PR-AUC daha bilgilendirici
+
+
+🔧 ÖNERİLEN DENGESİZLİK ÇÖZÜM STRATEJİLERİ:
+
+   1. RESAMPLING TEKNİKLERİ:
+      • SMOTE (Synthetic Minority Over-sampling)
+      • ADASYN (Adaptive Synthetic Sampling)
+      • Random Undersampling
+      
+   2. SINIF AĞIRLIKLANDIRMA:
+      • class_weight='balanced' parametresi
+      
+   3. ENSEMBLE YÖNTEMLER:
+      • BalancedRandomForest
+      • EasyEnsemble
+      
+   4. THRESHOLD OPTİMİZASYONU:
+      • Precision-Recall eğrisi ile optimal threshold
+
+
+✓ Görsel kaydedildi: ./eda_outputs/fig3_sinif_dengesizligi.png
+
+================================================================================
+BÖLÜM 5: KORELASYON VE İLİŞKİ ANALİZİ
+================================================================================
+
+📊 Korelasyon Matrisi Hesaplanıyor...
+
+📋 En Yüksek Korelasyona Sahip İlk 20 Özellik Çifti:
+Özellik 1 Özellik 2  Korelasyon
+      342       347    1.000000
+      206       209    1.000000
+      209       478    1.000000
+      209       347    1.000000
+      209       342    1.000000
+       74       209    1.000000
+       74       342    1.000000
+       74       347    1.000000
+       74       478    1.000000
+      347       478    1.000000
+      206       478    1.000000
+      206       347    1.000000
+       74       206    1.000000
+      206       342    1.000000
+      342       478    1.000000
+       34        36   -1.000000
+      140       275    1.000000
+      172       174    1.000000
+      307       309    0.999999
+      152       287    0.999997
+
+📊 Korelasyon Düzeyleri:
+   • Çok yüksek korelasyon (|r| > 0.95): 316 çift
+   • Yüksek korelasyon (0.8 < |r| <= 0.95): 331 çift
+   • Orta korelasyon (0.5 < |r| <= 0.8): 708 çift
+
+📋 Hedef Değişken ile En Yüksek Korelasyona Sahip 20 Özellik:
+Özellik  Korelasyon
+     59    0.156008
+    103    0.151230
+    510    0.131662
+    348    0.130807
+    431    0.119936
+    434    0.111312
+    430    0.109115
+     21    0.108333
+    435    0.108260
+     28   -0.106987
+    436    0.106119
+    210    0.103348
+    129    0.102799
+    298    0.101672
+    163    0.099506
+    124    0.094168
+    295    0.091380
+    316   -0.089385
+    160    0.089233
+    164    0.087289
+
+⚠️ MULTICOLLINEARITY (ÇOKLU DOĞRUSALLLIK) RİSKİ:
+
+   Veri setinde ciddi multicollinearity problemi bulunmaktadır:
+   
+   SORUNLAR:
+   • Yüzlerce özellik çifti arasında r > 0.95 korelasyon
+   • Bu, özelliklerin birbirinin kopyası veya türevi olduğunu gösterir
+   • Regresyon modellerinde katsayı tahminlerini dengesizleştirir
+   
+   NEDENLER:
+   • Aynı sensörün farklı zaman dilimlerindeki ölçümleri
+   • Türetilmiş özellikler (ör: ortalama, toplam)
+   • Fiziksel olarak ilişkili sensörler
+
+
+🔧 PCA VE FEATURE SELECTION İHTİYACI:
+
+   ✓ PCA (Principal Component Analysis) KESİNLİKLE ÖNERİLİR:
+   • 590 özellik çok yüksek boyutluluk
+   • Önerilen: %95 varyans açıklayan bileşenler (~50-100)
+   
+   ✓ FEATURE SELECTION STRATEJİLERİ:
+   • Variance Threshold: Düşük varyanslı sütunları kaldır
+   • Korelasyon Bazlı Eleme: r > 0.95 olan çiftlerden birini kaldır
+   • Tree-based Feature Importance
+   • LASSO Regularization
+
+
+✓ Görsel kaydedildi: ./eda_outputs/fig4_korelasyon_analizi.png
+✓ Görsel kaydedildi: ./eda_outputs/fig5_korelasyon_heatmap.png
+
+================================================================================
+BÖLÜM 6: AYKIRI DEĞER (OUTLIER) ANALİZİ
+================================================================================
+
+📊 Aykırı Değer İstatistikleri (IQR Yöntemi):
+   • Toplam analiz edilen sütun: 474
+   • Aykırı değer içeren sütun: 452
+
+📋 En Çok Aykırı Değer İçeren İlk 20 Sütun (IQR):
+Sütun  Gözlem  IQR_Outlier  IQR_Oran(%)
+   31    1565          354    22.619808
+   40    1543          330    21.386909
+  562    1294          215    16.615147
+  129    1558          238    15.275995
+  544    1565          239    15.271565
+  312    1566          234    14.942529
+  195    1563          233    14.907230
+  448    1566          230    14.687101
+  177    1566          230    14.687101
+  467    1563          218    13.947537
+  519     852          114    13.380282
+  247     852          114    13.380282
+  251    1567          201    12.827058
+  523    1567          199    12.699426
+   41    1543          195    12.637719
+   59    1560          196    12.564103
+   23    1565          194    12.396166
+  116    1567          192    12.252712
+  389    1567          189    12.061264
+  385     852          101    11.854460
+
+📊 Aykırı Değer Kategorileri:
+   • Yüksek aykırılık (>%10): 29 sütun
+   • Orta aykırılık (%5-%10): 81 sütun
+   • Düşük aykırılık (<%5): 342 sütun
+
+   • Ortalama aykırı değer oranı: %3.54
+   • Maksimum aykırı değer oranı: %22.62
+
+🔬 AYKIRI DEĞERLERİN OLASI NEDENLERİ:
+
+   1. SENSÖR HATASI:
+      • Kalibrasyon sorunları
+      • Sensör arızası veya bozulması
+      • İletişim hatası
+   
+   2. ÖLÇÜM ARIZASI:
+      • Geçici elektrik kesintileri
+      • Ortam koşullarındaki ani değişimler
+   
+   3. GERÇEK ÜRETİM PROBLEMİ:
+      • Anormal üretim koşulları
+      • Ham madde kalite sapmaları
+      • Bu değerler önemli bilgi taşıyabilir!
+
+
+⚠️ AYKIRI DEĞERLERİ SİLMENİN RİSKLERİ:
+
+   1. BİLGİ KAYBI:
+      • Aykırı değerler üretim hatası sinyali olabilir
+      • Özellikle Fail sınıfı için kritik özellikler silinebilir
+   
+   2. ÖNERİLEN YAKLAŞIMLAR:
+      • Winsorization (%1-99 percentile)
+      • RobustScaler kullanımı
+      • Tree-based modeller (aykırı değerlere dayanıklı)
+      • Aykırı değer göstergesi (flag) yeni özellik olarak
+
+
+✓ Görsel kaydedildi: ./eda_outputs/fig6_boxplots.png
+✓ Görsel kaydedildi: ./eda_outputs/fig7_outlier_dagilim.png
+
+================================================================================
+BÖLÜM 7: HEDEF DEĞİŞKEN İLE SENSÖR İLİŞKİSİ
+================================================================================
+
+📋 Hedef Değişken ile En İlişkili 10 Sensör:
+   1. Sensör 59: r = 0.1560
+   2. Sensör 103: r = 0.1512
+   3. Sensör 510: r = 0.1317
+   4. Sensör 348: r = 0.1308
+   5. Sensör 431: r = 0.1199
+   6. Sensör 434: r = 0.1113
+   7. Sensör 430: r = 0.1091
+   8. Sensör 21: r = 0.1083
+   9. Sensör 435: r = 0.1083
+   10. Sensör 28: r = -0.1070
+
+📊 Önemli Sensörlerin Sınıf Bazında İstatistikleri:
+
+   Sensör 59:
+      Pass (-1): Mean=2.5635, Std=9.3131
+      Fail (1):  Mean=8.5151, Std=10.8023
+      T-test: t=-6.226, p=0.0000 ✓ Anlamlı
+
+   Sensör 103:
+      Pass (-1): Mean=-0.0099, Std=0.0030
+      Fail (1):  Mean=-0.0081, Std=0.0035
+      T-test: t=-6.047, p=0.0000 ✓ Anlamlı
+
+   Sensör 510:
+      Pass (-1): Mean=54.4406, Std=35.7698
+      Fail (1):  Mean=74.3479, Std=55.3372
+      T-test: t=-5.248, p=0.0000 ✓ Anlamlı
+
+   Sensör 348:
+      Pass (-1): Mean=0.0243, Std=0.0103
+      Fail (1):  Mean=0.0304, Std=0.0240
+      T-test: t=-5.154, p=0.0000 ✓ Anlamlı
+
+   Sensör 431:
+      Pass (-1): Mean=21.1912, Std=31.8358
+      Fail (1):  Mean=38.9241, Std=74.1427
+      T-test: t=-4.813, p=0.0000 ✓ Anlamlı
+
+🏭 OPERASYONEL YORUM:
+
+   Bu analiz sonuçları üretim sürecinde şu anlamları taşımaktadır:
+   
+   1. KRİTİK SENSÖRLER:
+      • En yüksek korelasyonlu sensörler kalite ile doğrudan ilişkili
+      • Gerçek zamanlı izleme önceliği bu sensörlere verilmeli
+   
+   2. ERKEN UYARI SİSTEMİ:
+      • Pass ve Fail grupları arasında anlamlı fark gösteren sensörler
+      • Threshold değerler belirlenerek alarm sistemi kurulabilir
+   
+   3. MALİYET ETKİSİ:
+      • Hatalı ürün tespiti erken yapılabilir
+      • Hurda ve yeniden işleme maliyetleri azaltılabilir
+
+
+✓ Görsel kaydedildi: ./eda_outputs/fig8_density_plots.png
+✓ Görsel kaydedildi: ./eda_outputs/fig9_violin_plots.png
+✓ Görsel kaydedildi: ./eda_outputs/fig10_boxplot_karsilastirma.png
+
+================================================================================
+BÖLÜM 8: SONUÇ VE ÖZET
+================================================================================
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    EDA SONUÇ RAPORU - SECOM VERİ SETİ                        ║
+║              Yarı İletken Üretim Hatası Tahmin Analizi                       ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+============================================================
+1. VERİ KALİTESİ DEĞERLENDİRMESİ
+============================================================
+
+   VERİ KALİTESİ SKORU: ORTA-DÜŞÜK
+
+   OLUMLU YÖNLER:
+   • Toplam 1,567 gözlem mevcut - yeterli örnek büyüklüğü
+   • 590 sensör verisi - zengin özellik uzayı
+   • Hedef değişken tamamen dolu
+   
+   SORUNLU YÖNLER:
+   • Genel eksik veri oranı: %4.54
+   • %50+ eksik içeren sütun sayısı: 28
+   • Sabit değerli sütun sayısı: 116
+
+============================================================
+2. EKSİK VERİ PROBLEMİ CİDDİYETİ: YÜKSEK
+============================================================
+
+   • Toplam eksik hücre: 41,951
+   • Eksik değer içeren sütun: 538
+   
+   ÖNERİ: %40+ eksik sütunları sil, kalan için IterativeImputer
+
+============================================================
+3. SINIF DENGESİZLİĞİ: KRİTİK
+============================================================
+
+   • Pass:Fail oranı = 14.1:1
+   • Fail oranı: %6.64
+   
+   ÖNERİ: SMOTE, class_weight='balanced', F1-Score kullan
+
+============================================================
+4. BOYUT AZALTMA GEREKSİNİMİ: KRİTİK
+============================================================
+
+   • |r| > 0.95 korelasyonlu çift sayısı: 316
+   • Özellik/Gözlem oranı: 0.38
+   
+   ÖNERİ: PCA (%95 varyans) veya korelasyon bazlı eleme
+
+============================================================
+5. AYKIRI DEĞERLER: ORTA-YÜKSEK
+============================================================
+
+   • Ortalama aykırı oran: %3.54
+   • >%10 aykırılık gösteren sütun: 29
+   
+   ÖNERİ: RobustScaler, winsorization, tree-based modeller
+
+
+============================================================
+MODEL KURULUM ÖNERİLERİ
+============================================================
+
+   1. ÖN İŞLEME ADIMLARI:
+      • %40+ eksik sütunları sil
+      • Sabit değerli sütunları sil
+      • IterativeImputer ile eksik değer doldur
+      • RobustScaler ile ölçekleme
+      • PCA veya feature selection ile boyut azalt
+   
+   2. DENGESİZLİK ÇÖZÜMÜ:
+      • SMOTE veya class_weight='balanced'
+      • Threshold optimizasyonu
+   
+   3. MODEL SEÇİMİ:
+      • Random Forest / XGBoost / LightGBM
+      • Tree-based modeller aykırı değerlere dayanıklı
+   
+   4. DEĞERLENDİRME:
+      • Stratified K-Fold Cross Validation
+      • F1-Score ve PR-AUC metrikleri
+      • Confusion Matrix analizi
