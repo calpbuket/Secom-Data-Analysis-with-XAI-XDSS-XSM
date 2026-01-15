@@ -1,0 +1,2 @@
+total_samples,model_accuracy,xdss_stop,xdss_check,xdss_continue,xsm_critical,xsm_warning,xsm_safe
+100,0.87,0,6,94,0,17,83

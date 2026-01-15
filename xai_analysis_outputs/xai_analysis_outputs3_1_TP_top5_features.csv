@@ -1,0 +1,6 @@
+Feature,SHAP_Value,Feature_Value,Contribution
+31,-0.7223176,7.326934613077381,Negatif (Risk Azaltıcı)
+59,0.34491757,1.297165438844709,Pozitif (Risk Artırıcı)
+103,0.3222919,1.833333333333334,Pozitif (Risk Artırıcı)
+511,-0.22600126,0.0,Negatif (Risk Azaltıcı)
+477,0.21818015,1.8893071996895017,Pozitif (Risk Artırıcı)

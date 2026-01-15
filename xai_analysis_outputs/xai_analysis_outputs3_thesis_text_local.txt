@@ -1,0 +1,53 @@
+
+### Lokal Model Açıklamaları - Vaka Analizi
+
+SHAP waterfall plot'ları, bireysel tahminlerin nasıl oluştuğunu adım adım 
+göstermektedir. Her bir feature'ın modelin base (baseline) tahmininden 
+final tahmine olan katkısı görselleştirilmektedir.
+
+
+**True Positive Örnek (Index: 249):**
+
+Bu örnekte model, gerçekten hatalı olan bir ürünü başarıyla tespit etmiştir 
+(Fail olasılığı: 0.6686). Modelin Fail kararı vermesine 
+en çok katkı sağlayan değişkenler şunlardır:
+
+• 31, • 59, • 103, • 511, • 477
+
+Waterfall plot'ta görüldüğü üzere, bu sensörlerin SHAP değerleri pozitif 
+yöndedir ve modelin base tahmininden (expected value) Fail yönüne doğru 
+güçlü bir itme yapmaktadır. Bu örnekte 31, 59, 103 sensörlerinin 
+normalin dışında değerler göstermesi, modelin doğru karar vermesinde 
+belirleyici olmuştur.
+
+**Karar Mekanizması Yorumu:**
+Model, bu örnekte birden fazla sensörün uyuşan sinyalleri sayesinde yüksek 
+güven ile Fail kararı vermiştir. Bu durum, model kararlarının sağlam temellere 
+dayandığını ve tek bir sensöre bağımlı olmadığını göstermektedir.
+
+
+**False Negative Örnek (Index: 241):**
+
+Bu vakada model, gerçekte hatalı olan bir ürünü Pass olarak sınıflandırmış 
+ve hatayı kaçırmıştır (Fail olasılığı: 0.0274). Bu durumun 
+nedenleri SHAP analizi ile aşağıdaki gibi açıklanmaktadır:
+
+• 33, • 213, • 129, • 180, • 500
+
+Waterfall plot'ta dikkat çeken nokta, bazı sensörlerin pozitif (risk artırıcı) 
+katkı yaparken, diğerlerinin negatif (risk azaltıcı) katkı yapmasıdır. 
+Bu çelişkili sinyaller nedeniyle model karar güveni düşmüş ve hata 
+kaçırılmıştır.
+
+**Kritik Analiz:**
+33, 213, 129 sensörlerinin belirsizliği veya çelişkili katkıları, modelin 
+bu vakada yanılmasına neden olmuştur. Bu durum, özellikle karmaşık vaka 
+türlerinde model performansının iyileştirilmesi gerektiğine işaret 
+etmektedir. Ayrıca, bu tür vakaların manuel incelenmesi ve süreç 
+iyileştirmesi için kullanılması önerilmektedir.
+
+**Genel Değerlendirme:**
+Lokal açıklamalar, modelin hangi durumlarda başarılı olduğunu ve hangi 
+durumlarda yanılabileceğini anlamamızı sağlamaktadır. Bu bilgi, modelin 
+güvenilir şekilde deploy edilmesi ve sürekli izlenmesi açısından kritik 
+önem taşımaktadır.

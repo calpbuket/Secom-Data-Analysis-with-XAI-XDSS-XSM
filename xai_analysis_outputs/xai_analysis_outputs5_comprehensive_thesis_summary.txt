@@ -1,0 +1,115 @@
+
+================================================================================
+SECOM - KAPSAMLI XAI ANALİZİ TEZ ÖZETİ
+Açıklanabilir Yapay Zeka ile Model Şeffaflığı ve Karar Destek Sistemi
+================================================================================
+
+### AMAÇ
+
+Bu çalışmada, SECOM yarı iletken üretim veri seti üzerinde eğitilen 
+XGBoost modelinin kararlarını SHAP (SHapley Additive exPlanations) yöntemi 
+ile açıklamak ve modelin tahmin mekanizmasını anlaşılır hale getirmek 
+amaçlanmıştır.
+
+### YÖNTEM
+
+**XAI Yaklaşımı:** SHAP (Shapley değerleri temelli açıklama)
+**Model:** XGBoost Classifier (n_estimators=50, max_depth=3)
+**Pipeline:** IterativeImputer → RobustScaler → Top-100 Features → SMOTE → XGBoost
+**Test Seti:** Stratified split ile ayrılmış %20 test verisi
+
+### ANA BULGULAR
+
+
+**1. Global Model Açıklanabilirliği:**
+
+En etkili 5 sensör:
+   1. 419
+   2. 33
+   3. 59
+   4. 486
+   5. 213
+
+Bu sensörler, modelin toplam SHAP katkısının önemli bir bölümünü oluşturmakta 
+ve üretim sürecindeki kritik noktaları işaret etmektedir.
+
+
+**2. Sensör Eşik Davranışları:**
+
+SHAP dependence analizi ile her bir kritik sensör için eşik değerleri 
+belirlenmiştir. Bu eşikler, sensör değerlerinin hangi noktadan itibaren 
+Fail riskini artırdığını göstermektedir.
+
+Örnek eşik değerleri (Top-3 sensör için):
+
+   • 419: 
+     - 75th percentile: 0.5854
+     - Risk eşiği: ~0.3144
+
+   • 33: 
+     - 75th percentile: 0.5680
+     - Risk eşiği: ~0.1549
+
+   • 59: 
+     - 75th percentile: 0.4349
+     - Risk eşiği: ~1.8700
+
+
+**3. Vaka Bazlı Açıklamalar:**
+
+True Positive örneği incelemesi, modelin doğru Fail tespitlerinde birden 
+fazla sensörün uyuşan sinyaller vermesinin önemini ortaya koymuştur.
+
+False Negative örneği analizi ise, çelişkili sensör sinyallerinin model 
+kararında belirsizliğe yol açtığını ve bazı hataların kaçırılmasına neden 
+olduğunu göstermiştir.
+
+
+**4. Karar Destek Sistemi Kuralları:**
+
+SHAP sonuçlarına dayalı olarak 5 adet kural türetilmiştir. 
+Bu kurallar:
+- Gerçek zamanlı üretim izleme
+- Erken uyarı sistemi
+- Operatör karar desteği
+
+amaçları ile kullanılabilir.
+
+
+### SONUÇ VE ÖNERİLER
+
+**Bilimsel Katkılar:**
+
+1. **Model Şeffaflığı:** XGBoost modelinin "black box" yapısı SHAP ile 
+   açıklanabilir hale getirilmiştir.
+
+2. **Sensör Önceliklendirme:** Kritik sensörler nicel olarak belirlenmiş 
+   ve üretim sürecinde öncelikli izleme alanları ortaya konmuştur.
+
+3. **Eşik Belirleme:** Her sensör için istatistiksel eşikler hesaplanmış 
+   ve süreç kontrol limitleri önerilmiştir.
+
+4. **Karar Destek Altyapısı:** XDSS ve XSM için kural tabanlı sistem 
+   altyapısı oluşturulmuştur.
+
+**Pratik Uygulamalar:**
+
+- **Kalite Kontrol:** Model tahminleri, operatörlere hangi sensörlere 
+  dikkat etmeleri gerektiğini gösterebilir.
+
+- **Süreç İyileştirme:** Kritik sensörlerin davranışları incelenerek 
+  üretim süreci optimize edilebilir.
+
+- **Maliyet Azaltma:** Hatalı ürünlerin erken tespiti ile malzeme 
+  israfı ve yeniden işleme maliyetleri azaltılabilir.
+
+**Gelecek Çalışmalar:**
+
+1. LIME ve diğer XAI yöntemleri ile karşılaştırmalı analiz
+2. Zaman serisi bazlı SHAP analizi ile dinamik açıklamalar
+3. Gerçek zamanlı XDSS sisteminin endüstriyel ortamda test edilmesi
+4. Counterfactual açıklamalar ile "What-if" senaryolarının incelenmesi
+
+================================================================================
+                            ANALİZ TAMAMLANDI
+================================================================================

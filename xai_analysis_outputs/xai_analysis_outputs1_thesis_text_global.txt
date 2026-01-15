@@ -1,0 +1,36 @@
+
+### Global Model Açıklanabilirliği - SHAP Analizi
+
+SECOM yarı iletken üretim veri seti üzerinde eğitilen XGBoost modelinin 
+kararlarını açıklamak için SHAP (SHapley Additive exPlanations) yöntemi 
+uygulanmıştır. SHAP, oyun teorisi temelli bir açıklama yöntemi olup, 
+her bir feature'ın model tahminindeki katkısını nicel olarak ölçmektedir.
+
+**En Etkili Sensörler:**
+
+Modelin tahminlerinde en baskın rol oynayan sensörler şunlardır:
+1. 419 (Ortalama |SHAP|: 0.281808)
+2. 33 (Ortalama |SHAP|: 0.257453)
+3. 59 (Ortalama |SHAP|: 0.248750)
+
+Bu sensörlerin Fail sınıfına katkıları SHAP değerleri ile nicel olarak 
+gösterilmiştir. SHAP summary plot'u, her sensörün model kararlarına olan 
+etkisini görselleştirmekte olup, kırmızı renkler yüksek sensör değerlerini, 
+mavi renkler düşük değerleri temsil etmektedir.
+
+**Feature Importance Dağılımı:**
+
+Top-10 sensör, toplam SHAP katkısının yaklaşık %48.1'ini 
+oluşturmaktadır. Bu durum, modelin az sayıda kritik sensöre yoğunlaştığını 
+ve bu sensörlerin üretim sürecindeki hataları belirlemede kilit rol 
+oynadığını göstermektedir.
+
+**Etki Yönü Analizi:**
+
+Top-10 sensörden:
+- 0 tanesi Fail riskini artırıcı yönde
+- 10 tanesi Fail riskini azaltıcı yönde
+
+etki göstermektedir. Bu bulgu, bazı sensörlerin yüksek değerlerinin üretim 
+hatasına işaret ettiğini, bazılarının ise düşük değerlerinin risk oluşturduğunu 
+ortaya koymaktadır.

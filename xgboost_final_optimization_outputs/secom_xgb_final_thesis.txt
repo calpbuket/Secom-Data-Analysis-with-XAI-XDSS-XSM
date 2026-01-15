@@ -1,0 +1,57 @@
+
+### 4.X.X XGBoost Hyperparameter Optimizasyonu
+
+Model karşılaştırma aşamasında XGBoost'un en yüksek PR-AUC performansı göstermesi 
+üzerine, bu model için hyperparameter optimizasyonu gerçekleştirilmiştir.
+
+**Arama Alanı:**
+Grid search yöntemi ile aşağıdaki parametreler test edilmiştir:
+- n_estimators: [50, 100, 150]
+- max_depth: [3, 4, 5]
+- learning_rate: [0.05, 0.1]
+- subsample: [0.8, 1.0]
+- colsample_bytree: [0.8, 1.0]
+
+Toplam 72 farklı konfigürasyon, 5-katlı stratified cross-validation 
+ile değerlendirilmiştir. Optimizasyon kriteri olarak F1_fail (Fail sınıfı için F1-score) 
+seçilmiştir.
+
+**Optimal Konfigürasyon:**
+- n_estimators: 50
+- max_depth: 3
+- learning_rate: 0.1
+- subsample: 1.0
+- colsample_bytree: 1.0
+
+**Final Model Performansı (threshold=0.5):**
+
+| Metrik | Ortalama | Std |
+|--------|----------|-----|
+| F1_fail | 0.2651 | 0.0684 |
+| Recall_fail | 0.2900 | 0.1034 |
+| PR-AUC | 0.2295 | 0.0574 |
+| ROC-AUC | 0.7360 | - |
+
+### 4.X.X Karar Eşiği (Threshold) Optimizasyonu
+
+Yarı iletken üretim sürecinde hatalı ürün kaçırmanın maliyeti, yanlış alarm 
+maliyetinden yüksek olduğundan, Recall_fail metriğini artırmak amacıyla karar 
+eşiği optimize edilmiştir.
+
+**Optimal Threshold: 0.5**
+
+Bu eşik ile:
+- F1_fail: 0.2679
+- Recall_fail: 0.2885 
+- Precision_fail: 0.2500
+
+Optimal threshold kullanıldığında, toplam 30 hatalı ürün doğru 
+tespit edilirken, 74 hatalı ürün kaçırılmıştır. Default threshold 
+(0.5) ile karşılaştırıldığında, Recall değeri %0.0 
+artış göstermiştir.
+
+**Sonuç:**
+Önerilen final model, IterativeImputer + RobustScaler + Top-100 Feature Selection + 
+SMOTE + XGBoost (optimize edilmiş parametreler) + Threshold=0.5 
+pipeline'ı ile oluşturulmuştur. Bu model, üretim ortamında hatalı ürün tespiti 
+için kullanılabilir.

@@ -1,0 +1,82 @@
+
+### XDSS ve XSM İçin Türetilen Kurallar
+
+SHAP analizi sonuçlarına dayalı olarak, yarı iletken üretim sürecinde 
+erken uyarı ve karar destek sistemleri için aşağıdaki kurallar türetilmiştir:
+
+**Kural Tabanlı Risk Değerlendirme Sistemi:**
+
+
+**Kural 1: 419**
+
+- **Risk Yönü:** DÜŞÜK DEĞERLER → Fail Riski ARTAR
+- **SHAP Önemi:** 0.281808
+- **Kritik Eşik:** -0.4715 - -0.0001
+- **Koşul:** IF 419 < -0.4715 (25th percentile)
+- **Aksiyon:** THEN → Üretim sürecini incele, potansiyel hata riski yüksek
+
+
+**Kural 2: 33**
+
+- **Risk Yönü:** DÜŞÜK DEĞERLER → Fail Riski ARTAR
+- **SHAP Önemi:** 0.257453
+- **Kritik Eşik:** -0.3923 - -0.0096
+- **Koşul:** IF 33 < -0.3923 (25th percentile)
+- **Aksiyon:** THEN → Üretim sürecini incele, potansiyel hata riski yüksek
+
+
+**Kural 3: 59**
+
+- **Risk Yönü:** DÜŞÜK DEĞERLER → Fail Riski ARTAR
+- **SHAP Önemi:** 0.248750
+- **Kritik Eşik:** -0.4999 - -0.0501
+- **Koşul:** IF 59 < -0.4999 (25th percentile)
+- **Aksiyon:** THEN → Üretim sürecini incele, potansiyel hata riski yüksek
+
+
+**Kural 4: 486**
+
+- **Risk Yönü:** DÜŞÜK DEĞERLER → Fail Riski ARTAR
+- **SHAP Önemi:** 0.247438
+- **Kritik Eşik:** -0.5043 - 0.0270
+- **Koşul:** IF 486 < -0.5043 (25th percentile)
+- **Aksiyon:** THEN → Üretim sürecini incele, potansiyel hata riski yüksek
+
+
+**Kural 5: 213**
+
+- **Risk Yönü:** DÜŞÜK DEĞERLER → Fail Riski ARTAR
+- **SHAP Önemi:** 0.218840
+- **Kritik Eşik:** -0.4972 - 0.0887
+- **Koşul:** IF 213 < -0.4972 (25th percentile)
+- **Aksiyon:** THEN → Üretim sürecini incele, potansiyel hata riski yüksek
+
+
+
+**XDSS (Explainable Decision Support System) Kullanımı:**
+
+Bu kurallar, üretim hattı operatörlerine gerçek zamanlı karar desteği 
+sağlamak için kullanılabilir. Sensör değerleri belirtilen eşikleri aştığında, 
+sistem otomatik olarak uyarı üretecek ve operatöre hangi sensörün probleme 
+neden olduğunu açıklayacaktır.
+
+**XSM (Explainable Safety Mechanism) Kullanımı:**
+
+Güvenlik katmanı olarak, bu kurallar modelin tahminlerini doğrulamak için 
+kullanılabilir. Eğer model Fail tahmini yapıyorsa ancak kritik sensörler 
+normal aralıktaysa, bu durum güvenlik mekanizması tarafından flaglenebilir 
+ve manuel inceleme tetiklenebilir.
+
+**Risk Skoru Hesaplama Önerisi:**
+
+Her bir kritik sensör için risk skoru:
+```
+Risk_Score_i = SHAP_Importance_i × (Sensor_Value - Threshold) / Threshold
+```
+
+Toplam risk skoru:
+```
+Total_Risk_Score = Σ Risk_Score_i  (i = 1 to 5)
+```
+
+Total_Risk_Score > 0.5 ise yüksek risk kategorisi olarak değerlendirilebilir.

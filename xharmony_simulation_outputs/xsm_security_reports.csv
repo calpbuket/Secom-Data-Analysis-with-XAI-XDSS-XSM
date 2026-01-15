@@ -1,0 +1,101 @@
+sample_idx,status,n_critical,n_warning,n_info,recommendation
+0,WARNING,0,1,1,⚠️ 1 uyarı seviyesi anomali var. Dikkatli izleme yapın.
+1,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+2,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+3,SAFE,0,0,0,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+4,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+5,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+6,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+7,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+8,SAFE,0,0,0,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+9,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+10,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+11,WARNING,0,1,1,⚠️ 1 uyarı seviyesi anomali var. Dikkatli izleme yapın.
+12,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+13,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+14,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+15,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+16,WARNING,0,1,1,⚠️ 1 uyarı seviyesi anomali var. Dikkatli izleme yapın.
+17,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+18,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+19,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+20,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+21,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+22,WARNING,0,1,1,⚠️ 1 uyarı seviyesi anomali var. Dikkatli izleme yapın.
+23,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+24,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+25,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+26,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+27,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+28,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+29,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+30,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+31,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+32,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+33,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+34,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+35,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+36,WARNING,0,1,1,⚠️ 1 uyarı seviyesi anomali var. Dikkatli izleme yapın.
+37,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+38,SAFE,0,0,0,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+39,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+40,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+41,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+42,SAFE,0,0,0,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+43,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+44,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+45,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+46,WARNING,0,1,1,⚠️ 1 uyarı seviyesi anomali var. Dikkatli izleme yapın.
+47,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+48,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+49,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+50,SAFE,0,0,0,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+51,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+52,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+53,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+54,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+55,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+56,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+57,WARNING,0,2,1,⚠️ 2 uyarı seviyesi anomali var. Dikkatli izleme yapın.
+58,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+59,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+60,WARNING,0,2,1,⚠️ 2 uyarı seviyesi anomali var. Dikkatli izleme yapın.
+61,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+62,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+63,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+64,SAFE,0,0,0,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+65,WARNING,0,1,0,⚠️ 1 uyarı seviyesi anomali var. Dikkatli izleme yapın.
+66,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+67,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+68,WARNING,0,5,1,⚠️ 5 uyarı seviyesi anomali var. Dikkatli izleme yapın.
+69,SAFE,0,0,0,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+70,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+71,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+72,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+73,WARNING,0,1,1,⚠️ 1 uyarı seviyesi anomali var. Dikkatli izleme yapın.
+74,WARNING,0,1,1,⚠️ 1 uyarı seviyesi anomali var. Dikkatli izleme yapın.
+75,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+76,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+77,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+78,WARNING,0,1,0,⚠️ 1 uyarı seviyesi anomali var. Dikkatli izleme yapın.
+79,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+80,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+81,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+82,WARNING,0,3,0,⚠️ 3 uyarı seviyesi anomali var. Dikkatli izleme yapın.
+83,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+84,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+85,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+86,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+87,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+88,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+89,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+90,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+91,WARNING,0,1,0,⚠️ 1 uyarı seviyesi anomali var. Dikkatli izleme yapın.
+92,WARNING,0,1,1,⚠️ 1 uyarı seviyesi anomali var. Dikkatli izleme yapın.
+93,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+94,WARNING,0,1,1,⚠️ 1 uyarı seviyesi anomali var. Dikkatli izleme yapın.
+95,SAFE,0,0,0,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+96,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+97,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+98,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.
+99,SAFE,0,0,1,✅ Güvenlik kontrolleri normal. Devam edilebilir.

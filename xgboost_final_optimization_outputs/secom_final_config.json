@@ -1,0 +1,28 @@
+{
+  "pipeline": {
+    "imputer": "IterativeImputer (ExtraTrees, max_iter=5)",
+    "scaler": "RobustScaler",
+    "feature_selection": "Top-100 (XGBoost importance)",
+    "resampling": "SMOTE",
+    "model": "XGBoost"
+  },
+  "xgboost_params": {
+    "n_estimators": 50,
+    "max_depth": 3,
+    "learning_rate": 0.1,
+    "subsample": 1.0,
+    "colsample_bytree": 1.0,
+    "random_state": 42,
+    "n_jobs": 1,
+    "eval_metric": "logloss",
+    "tree_method": "hist",
+    "scale_pos_weight": 1.0
+  },
+  "optimal_threshold": 0.5,
+  "performance": {
+    "F1_fail": 0.26506863362882854,
+    "Recall_fail": 0.29,
+    "PR_AUC": 0.22953140418686374,
+    "ROC_AUC": 0.7359534607241371
+  }
+}
