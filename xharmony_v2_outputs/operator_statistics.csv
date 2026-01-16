@@ -1,0 +1,2 @@
+total_decisions,override_rate,agreement_rate,profile
+100,0.06,0.94,"OperatorProfile(id=OPR_O001, type=optimistic, exp=6.5y, acc=0.85)"

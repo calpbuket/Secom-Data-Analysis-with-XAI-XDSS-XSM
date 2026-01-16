@@ -1,0 +1,2 @@
+total_samples,model_accuracy,xdss_stop,xdss_check,xdss_continue,operator_override_rate,operator_avg_confidence,conflict_rate,critical_conflicts,avg_conflict_risk,interlock_allow_rate,interlock_deny_rate,interlock_escalate_rate,avg_interlock_risk,xsm_critical
+100,0.87,0,6,94,0.06,0.7000000000000002,0.06,0,0.8797382484277089,0.94,0.0,0.06,0.5236800974108327,0

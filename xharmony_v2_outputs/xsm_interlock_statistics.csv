@@ -1,0 +1,2 @@
+total_interlocks,allow_count,deny_count,escalate_count,allow_rate,deny_rate,escalate_rate,avg_risk_score
+6,0,0,6,0.0,0.0,1.0,0.5236800974108327
