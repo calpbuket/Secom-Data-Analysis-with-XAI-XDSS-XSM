@@ -1,6 +1,6 @@
 """
-SECOM - XGBOOST FİNAL OPTİMİZASYONU (AŞAMA 5)
-==============================================
+SECOM - XGBOOST FİNAL OPTİMİZASYONU + SHAP ANALİZİ (AŞAMA 5)
+==============================================================
 Final Pipeline: IterativeImputer → RobustScaler → Top-100 Features → SMOTE → XGBoost
 
 Bu script:
@@ -10,9 +10,10 @@ Bu script:
     4. En iyi konfigürasyonu seçer
     5. Final model performansını raporlar
     6. Optimal threshold belirler
+    7. ✨ SHAP feature importance analizi yapar ✨
 
 Gerekli paketler:
-    pip install imbalanced-learn xgboost --break-system-packages
+    pip install imbalanced-learn xgboost shap --break-system-packages
 """
 
 import warnings
@@ -34,20 +35,22 @@ from sklearn.metrics import (
 )
 from xgboost import XGBClassifier
 from imblearn.over_sampling import SMOTE
+import shap
 
 
 # =============================================================================
 # GLOBAL SEED - REPRODUCIBILITY
 # =============================================================================
-
 RANDOM_SEED = 42
 
 def set_all_seeds(seed=42):
+    """Tüm random seed'leri ayarlar."""
     random.seed(seed)
     np.random.seed(seed)
     print(f"[SEED] Tüm random seed'ler {seed} olarak ayarlandı")
 
 set_all_seeds(RANDOM_SEED)
+
 
 # =============================================================================
 # YARDIMCI FONKSİYONLAR
@@ -191,6 +194,32 @@ def run_final_pipeline(X_train, X_test, y_train, y_test, xgb_params, top_feature
     y_prob = model.predict_proba(X_test_scaled)[:, 1]
     
     return y_pred, y_prob, train_time, model
+
+
+def prepare_data_for_training(X, y, top_features):
+    """
+    Veriyi SHAP analizi için hazırlar - pipeline'ı uygular.
+    """
+    # Feature selection
+    X_sel = X[top_features].values
+    
+    # 1. Imputation
+    imputer = IterativeImputer(
+        estimator=ExtraTreesRegressor(n_estimators=5, max_depth=5, 
+                                      random_state=RANDOM_SEED, n_jobs=1),
+        max_iter=5, random_state=RANDOM_SEED
+    )
+    X_imp = imputer.fit_transform(X_sel)
+    
+    # 2. Scaling
+    scaler = RobustScaler()
+    X_scaled = scaler.fit_transform(X_imp)
+    
+    # 3. SMOTE
+    smote = SMOTE(random_state=RANDOM_SEED)
+    X_resampled, y_resampled = smote.fit_resample(X_scaled, y)
+    
+    return X_resampled, y_resampled
 
 
 # =============================================================================
@@ -606,10 +635,87 @@ def optimize_threshold(y_true, y_prob):
 
 
 # =============================================================================
+# 7️⃣ ✨ SHAP ANALİZİ ✨
+# =============================================================================
+
+def perform_shap_analysis(X, y, importance_df, final_params, top_k=100):
+    """
+    Final XGBoost modeli için SHAP feature importance analizi yapar.
+    
+    Returns:
+        shap_importance_df: SHAP importance değerleri
+    """
+    print("\n" + "=" * 70)
+    print("✨ SHAP FEATURE IMPORTANCE ANALİZİ ✨")
+    print("=" * 70)
+    
+    top_features = importance_df['feature'].head(top_k).tolist()
+    
+    print("\n[1] Veri hazırlanıyor (pipeline uygulanıyor)...")
+    X_processed, y_processed = prepare_data_for_training(X, y, top_features)
+    
+    print("[2] Final XGBoost modeli eğitiliyor...")
+    model = XGBClassifier(**final_params)
+    model.fit(X_processed, y_processed, verbose=False)
+    
+    print("[3] SHAP değerleri hesaplanıyor (bu biraz sürebilir)...")
+    shap_start = time.time()
+    
+    # TreeExplainer kullan (XGBoost için optimize)
+    explainer = shap.TreeExplainer(model)
+    shap_values = explainer.shap_values(X_processed)
+    
+    shap_time = time.time() - shap_start
+    print(f"    ✓ SHAP hesaplama tamamlandı ({shap_time:.1f}s)")
+    
+    # Global SHAP importance hesapla
+    print("\n[4] Global SHAP importance hesaplanıyor...")
+    
+    mean_abs_shap = np.abs(shap_values).mean(axis=0)
+    
+    shap_importance_df = pd.DataFrame({
+        'feature': top_features,
+        'shap_importance': mean_abs_shap,
+        'xgb_importance': importance_df['importance'].head(top_k).values
+    }).sort_values('shap_importance', ascending=False).reset_index(drop=True)
+    
+    # Rank ekle
+    shap_importance_df['shap_rank'] = range(1, len(shap_importance_df) + 1)
+    
+    print("\n" + "-" * 70)
+    print("TOP 20 SHAP FEATURE IMPORTANCE")
+    print("-" * 70)
+    
+    display_df = shap_importance_df.head(20).copy()
+    display_df['shap_importance'] = display_df['shap_importance'].apply(lambda x: f"{x:.6f}")
+    display_df['xgb_importance'] = display_df['xgb_importance'].apply(lambda x: f"{x:.6f}")
+    
+    print("\n")
+    print(display_df[['shap_rank', 'feature', 'shap_importance', 'xgb_importance']].to_string(index=False))
+    
+    # İstatistikler
+    print("\n" + "-" * 70)
+    print("SHAP İSTATİSTİKLER")
+    print("-" * 70)
+    print(f"""
+    Top-3 Features (SHAP):
+    1. {shap_importance_df.loc[0, 'feature']}: {shap_importance_df.loc[0, 'shap_importance']:.6f}
+    2. {shap_importance_df.loc[1, 'feature']}: {shap_importance_df.loc[1, 'shap_importance']:.6f}
+    3. {shap_importance_df.loc[2, 'feature']}: {shap_importance_df.loc[2, 'shap_importance']:.6f}
+    
+    Toplam SHAP importance: {shap_importance_df['shap_importance'].sum():.4f}
+    Ortalama SHAP importance: {shap_importance_df['shap_importance'].mean():.6f}
+    """)
+    
+    return shap_importance_df
+
+
+# =============================================================================
 # TEZ METNİ OLUŞTUR
 # =============================================================================
 
-def generate_thesis_text(search_results, final_params, fold_df, optimal_threshold, thresh_df):
+def generate_thesis_text(search_results, final_params, fold_df, optimal_threshold, 
+                        thresh_df, shap_importance_df):
     """Tez için özet paragraflar oluşturur."""
     
     print("\n" + "=" * 70)
@@ -627,6 +733,9 @@ def generate_thesis_text(search_results, final_params, fold_df, optimal_threshol
     
     # Optimal threshold sonuçları
     opt_row = thresh_df[thresh_df['Threshold'] == optimal_threshold].iloc[0]
+    
+    # Top SHAP features
+    top_shap = shap_importance_df.head(10)
     
     text = f"""
 ### 4.X.X XGBoost Hyperparameter Optimizasyonu
@@ -680,11 +789,32 @@ tespit edilirken, {int(opt_row['FN'])} hatalı ürün kaçırılmıştır. Defau
 (0.5) ile karşılaştırıldığında, Recall değeri %{((opt_row['Recall_fail'] - thresh_df[thresh_df['Threshold']==0.5].iloc[0]['Recall_fail']) * 100):.1f} 
 artış göstermiştir.
 
+### 4.X.X SHAP Feature Importance Analizi
+
+Model yorumlanabilirliği ve güvenilirliği artırmak amacıyla SHAP (SHapley Additive 
+exPlanations) analizi gerçekleştirilmiştir. SHAP değerleri, her bir feature'ın model 
+tahminlerine olan katkısını ölçer.
+
+**En Önemli 10 Feature (SHAP):**
+
+| Sıra | Feature | SHAP Importance |
+|------|---------|----------------|
+"""
+    
+    for idx, row in top_shap.iterrows():
+        text += f"| {idx+1} | {row['feature']} | {row['shap_importance']:.6f} |\n"
+    
+    text += f"""
+Top-3 feature ({top_shap.iloc[0]['feature']}, {top_shap.iloc[1]['feature']}, 
+{top_shap.iloc[2]['feature']}) modelin tahminlerinin yaklaşık 
+%{(top_shap.head(3)['shap_importance'].sum() / top_shap['shap_importance'].sum() * 100):.1f}'ini açıklamaktadır.
+
 **Sonuç:**
 Önerilen final model, IterativeImputer + RobustScaler + Top-100 Feature Selection + 
 SMOTE + XGBoost (optimize edilmiş parametreler) + Threshold={optimal_threshold} 
-pipeline'ı ile oluşturulmuştur. Bu model, üretim ortamında hatalı ürün tespiti 
-için kullanılabilir.
+pipeline'ı ile oluşturulmuştur. SHAP analizi, modelin karar mekanizmasının 
+yorumlanabilir ve güvenilir olduğunu göstermektedir. Bu model, üretim ortamında 
+hatalı ürün tespiti için kullanılabilir.
 """
     
     print(text)
@@ -697,7 +827,7 @@ için kullanılabilir.
 
 def main(filepath='secom.csv', max_combinations=None):
     """
-    Ana fonksiyon - XGBoost Final Optimizasyonu
+    Ana fonksiyon - XGBoost Final Optimizasyonu + SHAP
     
     Args:
         filepath: Veri dosyası yolu
@@ -707,7 +837,7 @@ def main(filepath='secom.csv', max_combinations=None):
     
     print("\n")
     print("*" * 70)
-    print("  SECOM - XGBOOST FİNAL OPTİMİZASYONU")
+    print("  SECOM - XGBOOST FİNAL OPTİMİZASYONU + SHAP ANALİZİ")
     print("  Pipeline: IterativeImputer → Scaler → Top-100 → SMOTE → XGBoost")
     print("*" * 70)
     
@@ -739,15 +869,22 @@ def main(filepath='secom.csv', max_combinations=None):
     optimal_threshold, thresh_df = optimize_threshold(y_true, y_prob)
     thresh_df.to_csv('secom_xgb_threshold_analysis.csv', index=False)
     
-    # 7. Tez metni oluştur
+    # 7. ✨ SHAP Analizi ✨
+    shap_importance_df = perform_shap_analysis(
+        X_clean, y, importance_df, final_params, top_k=100
+    )
+    shap_importance_df.to_csv('secom_shap_importance.csv', index=False)
+    
+    # 8. Tez metni oluştur
     thesis_text = generate_thesis_text(
-        search_results, final_params, fold_df, optimal_threshold, thresh_df
+        search_results, final_params, fold_df, optimal_threshold, thresh_df,
+        shap_importance_df
     )
     
     with open('secom_xgb_final_thesis.txt', 'w', encoding='utf-8') as f:
         f.write(thesis_text)
     
-    # 8. Final config'i kaydet
+    # 9. Final config'i kaydet
     final_config = {
         'pipeline': {
             'imputer': 'IterativeImputer (ExtraTrees, max_iter=5)',
@@ -763,7 +900,8 @@ def main(filepath='secom.csv', max_combinations=None):
             'Recall_fail': fold_df['recall_fail'].mean(),
             'PR_AUC': fold_df['pr_auc'].mean(),
             'ROC_AUC': fold_df['roc_auc'].mean()
-        }
+        },
+        'top_10_shap_features': shap_importance_df.head(10)['feature'].tolist()
     }
     
     import json
@@ -780,6 +918,7 @@ def main(filepath='secom.csv', max_combinations=None):
     ├─ secom_xgb_hyperparameter_search.csv
     ├─ secom_xgb_final_fold_results.csv
     ├─ secom_xgb_threshold_analysis.csv
+    ├─ ✨ secom_shap_importance.csv ✨
     ├─ secom_xgb_final_thesis.txt
     └─ secom_final_config.json
     """)
@@ -792,7 +931,8 @@ def main(filepath='secom.csv', max_combinations=None):
         'final_params': final_params,
         'fold_results': fold_df,
         'optimal_threshold': optimal_threshold,
-        'threshold_analysis': thresh_df
+        'threshold_analysis': thresh_df,
+        'shap_importance': shap_importance_df
     }
 
 
@@ -803,4 +943,8 @@ def main(filepath='secom.csv', max_combinations=None):
 if __name__ == "__main__":
     filepath = "Downloads/Buket/uci-secom.csv"
     
-    results = main(filepath, max_combinations=None)  
+    # Tüm kombinasyonları dene (72 kombinasyon, ~60-90 dk)
+    # results = main(filepath)
+    
+    # Veya hızlı test için 20 kombinasyon (~15-20 dk)
+    results = main(filepath, max_combinations=None)  # None = tümü

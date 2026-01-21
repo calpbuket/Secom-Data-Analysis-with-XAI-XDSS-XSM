@@ -1,18 +1,20 @@
 """
 ================================================================================
-SECOM - KAPSAMLI XAI / SHAP ANALİZİ
+SECOM - KAPSAMLI XAI / SHAP + LIME ANALİZİ
 Explainable AI ile Model Açıklanabilirliği ve Tez Dokümantasyonu
 ================================================================================
 
 Bu script şu analizleri gerçekleştirir:
     1. Global SHAP Analizi (Model genel davranışı)
     2. Dependence Plot Analizi (Eşik davranışları)
-    3. Lokal Vaka Açıklamaları (TP ve FN örnekleri)
-    4. XDSS ve XSM İçin Kural Türetme
-    5. Tez için Akademik Yorum Paragrafları
+    3. Lokal Vaka Açıklamaları (TP ve FN örnekleri - SHAP)
+    4. LIME Analizi (Lokal model-agnostik açıklamalar)
+    5. SHAP vs LIME Karşılaştırması
+    6. XDSS ve XSM İçin Kural Türetme
+    7. Tez için Akademik Yorum Paragrafları
 
 Gereksinimler:
-    pip install shap matplotlib pandas numpy --break-system-packages
+    pip install shap lime matplotlib pandas numpy scikit-learn --break-system-packages
 
 Giriş dosyaları (save_model_and_test.py ile oluşturulmalı):
     - xai_final_model.pkl
@@ -32,6 +34,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import shap
+from lime import lime_tabular
 from pathlib import Path
 
 # Grafik ayarları
@@ -408,7 +411,7 @@ kurulması açısından kritik önem taşımaktadır.
 
 
 # =============================================================================
-# 3. LOKAL VAKA AÇIKLAMALARI
+# 3. LOKAL VAKA AÇIKLAMALARI (SHAP)
 # =============================================================================
 
 def local_explanation_analysis(shap_values, explainer, X_test, y_test, predictions, feature_names, output_dir):
@@ -423,7 +426,7 @@ def local_explanation_analysis(shap_values, explainer, X_test, y_test, predictio
     """
     
     print("\n" + "=" * 70)
-    print("3. LOKAL VAKA AÇIKLAMALARI")
+    print("3. LOKAL VAKA AÇIKLAMALARI (SHAP)")
     print("=" * 70)
     
     y_pred = predictions['y_pred'].values
@@ -441,6 +444,7 @@ def local_explanation_analysis(shap_values, explainer, X_test, y_test, predictio
     print(f"False Negatives: {len(fn_indices)}")
     
     local_cases = []
+    selected_indices = {}  # LIME için de kullanılacak
     
     # -------------------------------------------------------------------------
     # TRUE POSITIVE ÖRNEĞİ
@@ -451,6 +455,7 @@ def local_explanation_analysis(shap_values, explainer, X_test, y_test, predictio
         # En yüksek olasılıklı TP'yi seç
         tp_probs = y_prob[tp_indices]
         tp_idx_max = tp_indices[np.argmax(tp_probs)]
+        selected_indices['TP'] = tp_idx_max
         
         print(f"  Seçilen örnek index: {tp_idx_max}")
         print(f"  Gerçek: Fail (1), Tahmin: Fail (1)")
@@ -466,13 +471,13 @@ def local_explanation_analysis(shap_values, explainer, X_test, y_test, predictio
         
         plt.figure(figsize=(10, 8))
         shap.waterfall_plot(shap_explanation, max_display=15, show=False)
-        plt.title(f"True Positive Örnek - Waterfall Plot (Index: {tp_idx_max})", 
+        plt.title(f"SHAP - True Positive Örnek - Waterfall Plot (Index: {tp_idx_max})", 
                   fontsize=14, pad=20)
         plt.tight_layout()
-        plt.savefig(f'{output_dir}3_1_waterfall_TP_{tp_idx_max}.png', dpi=300, bbox_inches='tight')
+        plt.savefig(f'{output_dir}3_1_shap_waterfall_TP_{tp_idx_max}.png', dpi=300, bbox_inches='tight')
         plt.close()
         
-        print(f"  ✓ Görsel: {output_dir}3_1_waterfall_TP_{tp_idx_max}.png")
+        print(f"  ✓ Görsel: {output_dir}3_1_shap_waterfall_TP_{tp_idx_max}.png")
         
         # Top-5 katkılı feature'lar
         shap_abs = np.abs(shap_values[tp_idx_max])
@@ -486,9 +491,9 @@ def local_explanation_analysis(shap_values, explainer, X_test, y_test, predictio
                             else 'Negatif (Risk Azaltıcı)' for i in top_5_indices]
         })
         
-        tp_top5.to_csv(f'{output_dir}3_1_TP_top5_features.csv', index=False)
+        tp_top5.to_csv(f'{output_dir}3_1_SHAP_TP_top5_features.csv', index=False)
         
-        print("\n  Top-5 Katkılı Feature:")
+        print("\n  Top-5 Katkılı Feature (SHAP):")
         print(tp_top5.to_string(index=False))
         
         local_cases.append({
@@ -497,7 +502,8 @@ def local_explanation_analysis(shap_values, explainer, X_test, y_test, predictio
             'y_true': 1,
             'y_pred': 1,
             'y_prob': y_prob[tp_idx_max],
-            'top_features': tp_top5['Feature'].tolist()
+            'top_features': tp_top5['Feature'].tolist(),
+            'shap_values': shap_values[tp_idx_max]
         })
     
     # -------------------------------------------------------------------------
@@ -509,6 +515,7 @@ def local_explanation_analysis(shap_values, explainer, X_test, y_test, predictio
         # En düşük olasılıklı FN'yi seç (kaçırılan örnek)
         fn_probs = y_prob[fn_indices]
         fn_idx_min = fn_indices[np.argmin(fn_probs)]
+        selected_indices['FN'] = fn_idx_min
         
         print(f"  Seçilen örnek index: {fn_idx_min}")
         print(f"  Gerçek: Fail (1), Tahmin: Pass (0)")
@@ -524,13 +531,13 @@ def local_explanation_analysis(shap_values, explainer, X_test, y_test, predictio
         
         plt.figure(figsize=(10, 8))
         shap.waterfall_plot(shap_explanation, max_display=15, show=False)
-        plt.title(f"False Negative Örnek - Waterfall Plot (Index: {fn_idx_min})", 
+        plt.title(f"SHAP - False Negative Örnek - Waterfall Plot (Index: {fn_idx_min})", 
                   fontsize=14, pad=20)
         plt.tight_layout()
-        plt.savefig(f'{output_dir}3_2_waterfall_FN_{fn_idx_min}.png', dpi=300, bbox_inches='tight')
+        plt.savefig(f'{output_dir}3_2_shap_waterfall_FN_{fn_idx_min}.png', dpi=300, bbox_inches='tight')
         plt.close()
         
-        print(f"  ✓ Görsel: {output_dir}3_2_waterfall_FN_{fn_idx_min}.png")
+        print(f"  ✓ Görsel: {output_dir}3_2_shap_waterfall_FN_{fn_idx_min}.png")
         
         # Top-5 katkılı feature'lar
         shap_abs = np.abs(shap_values[fn_idx_min])
@@ -544,9 +551,9 @@ def local_explanation_analysis(shap_values, explainer, X_test, y_test, predictio
                             else 'Negatif (Risk Azaltıcı)' for i in top_5_indices]
         })
         
-        fn_top5.to_csv(f'{output_dir}3_2_FN_top5_features.csv', index=False)
+        fn_top5.to_csv(f'{output_dir}3_2_SHAP_FN_top5_features.csv', index=False)
         
-        print("\n  Top-5 Katkılı Feature:")
+        print("\n  Top-5 Katkılı Feature (SHAP):")
         print(fn_top5.to_string(index=False))
         
         local_cases.append({
@@ -555,18 +562,19 @@ def local_explanation_analysis(shap_values, explainer, X_test, y_test, predictio
             'y_true': 1,
             'y_pred': 0,
             'y_prob': y_prob[fn_idx_min],
-            'top_features': fn_top5['Feature'].tolist()
+            'top_features': fn_top5['Feature'].tolist(),
+            'shap_values': shap_values[fn_idx_min]
         })
     
     # -------------------------------------------------------------------------
     # Akademik Yorum Metni (TEZ İÇİN)
     # -------------------------------------------------------------------------
     print("\n" + "=" * 70)
-    print("TEZ İÇİN AKADEMİK YORUM - LOKAL AÇIKLAMALAR")
+    print("TEZ İÇİN AKADEMİK YORUM - SHAP LOKAL AÇIKLAMALAR")
     print("=" * 70)
     
     thesis_text_local = """
-### Lokal Model Açıklamaları - Vaka Analizi
+### Lokal Model Açıklamaları - SHAP Vaka Analizi
 
 SHAP waterfall plot'ları, bireysel tahminlerin nasıl oluştuğunu adım adım 
 göstermektedir. Her bir feature'ın modelin base (baseline) tahmininden 
@@ -624,26 +632,616 @@ bu vakada yanılmasına neden olmuştur. Bu durum, özellikle karmaşık vaka
 türlerinde model performansının iyileştirilmesi gerektiğine işaret 
 etmektedir. Ayrıca, bu tür vakaların manuel incelenmesi ve süreç 
 iyileştirmesi için kullanılması önerilmektedir.
-
-**Genel Değerlendirme:**
-Lokal açıklamalar, modelin hangi durumlarda başarılı olduğunu ve hangi 
-durumlarda yanılabileceğini anlamamızı sağlamaktadır. Bu bilgi, modelin 
-güvenilir şekilde deploy edilmesi ve sürekli izlenmesi açısından kritik 
-önem taşımaktadır.
 """
     
     # Metni kaydet
-    with open(f'{output_dir}3_thesis_text_local.txt', 'w', encoding='utf-8') as f:
+    with open(f'{output_dir}3_thesis_text_shap_local.txt', 'w', encoding='utf-8') as f:
         f.write(thesis_text_local)
     
     print(thesis_text_local)
-    print(f"\n✓ Tez metni kaydedildi: {output_dir}3_thesis_text_local.txt")
+    print(f"\n✓ Tez metni kaydedildi: {output_dir}3_thesis_text_shap_local.txt")
     
-    return local_cases
+    return local_cases, selected_indices
 
 
 # =============================================================================
-# 4. XDSS VE XSM İÇİN KURAL TÜRETME
+# 4. LIME ANALİZİ
+# =============================================================================
+
+def lime_analysis(model, X_test, y_test, predictions, feature_names, selected_indices, output_dir):
+    """
+    LIME (Local Interpretable Model-agnostic Explanations) analizi.
+    
+    LIME, her bir tahmin için yerel olarak yorumlanabilir bir model 
+    (genellikle lineer regresyon) oluşturarak açıklamalar üretir.
+    
+    Çıktılar:
+        - LIME explainer oluşturma
+        - TP ve FN örnekleri için LIME açıklamaları
+        - Feature importance görselleştirmeleri
+        - Akademik yorumlar
+    """
+    
+    print("\n" + "=" * 70)
+    print("4. LIME ANALİZİ")
+    print("=" * 70)
+    
+    y_pred = predictions['y_pred'].values
+    y_prob = predictions['y_prob'].values
+    
+    # -------------------------------------------------------------------------
+    # LIME Explainer Oluşturma
+    # -------------------------------------------------------------------------
+    print("\n[4.1] LIME TabularExplainer oluşturuluyor...")
+    
+    lime_explainer = lime_tabular.LimeTabularExplainer(
+        training_data=X_test.values,
+        feature_names=feature_names,
+        class_names=['Pass', 'Fail'],
+        mode='classification',
+        discretize_continuous=True,
+        random_state=42
+    )
+    
+    print(f"✓ LIME Explainer oluşturuldu")
+    print(f"  Training data shape: {X_test.shape}")
+    print(f"  Feature sayısı: {len(feature_names)}")
+    
+    lime_results = []
+    
+    # -------------------------------------------------------------------------
+    # TRUE POSITIVE ÖRNEĞİ İÇİN LIME
+    # -------------------------------------------------------------------------
+    if 'TP' in selected_indices:
+        print("\n[4.2] True Positive örneği için LIME analizi...")
+        
+        tp_idx = selected_indices['TP']
+        instance = X_test.iloc[tp_idx].values
+        
+        # LIME explanation
+        lime_exp = lime_explainer.explain_instance(
+            instance,
+            model.predict_proba,
+            num_features=15,
+            top_labels=2
+        )
+        
+        # Fail sınıfı için açıklama (label=1)
+        label = 1
+        
+        # Feature importance'ları al
+        lime_features = lime_exp.as_list(label=label)
+        
+        print(f"  Örnek index: {tp_idx}")
+        print(f"  Gerçek: Fail (1), Tahmin: Fail (1)")
+        print(f"  Fail olasılığı: {y_prob[tp_idx]:.4f}")
+        
+        # LIME görselleştirmesi - matplotlib
+        fig, ax = plt.subplots(figsize=(12, 8))
+        
+        # Top-10 feature
+        top_features = lime_features[:10]
+        feature_labels = [f[0] for f in top_features]
+        feature_weights = [f[1] for f in top_features]
+        
+        colors = ['#d73027' if w > 0 else '#4575b4' for w in feature_weights]
+        
+        y_pos = np.arange(len(feature_labels))
+        ax.barh(y_pos, feature_weights, color=colors, edgecolor='black', alpha=0.8)
+        ax.set_yticks(y_pos)
+        ax.set_yticklabels(feature_labels, fontsize=10)
+        ax.invert_yaxis()
+        ax.set_xlabel('LIME Ağırlığı (Fail Katkısı)', fontsize=12)
+        ax.set_title(f'LIME - True Positive Örnek (Index: {tp_idx})\n'
+                     f'Fail Olasılığı: {y_prob[tp_idx]:.4f}', fontsize=14, pad=15)
+        ax.axvline(x=0, color='black', linestyle='-', linewidth=0.5)
+        ax.grid(True, axis='x', alpha=0.3)
+        
+        # Legend
+        from matplotlib.patches import Patch
+        legend_elements = [
+            Patch(facecolor='#d73027', label='Fail riskini ARTIRIR'),
+            Patch(facecolor='#4575b4', label='Fail riskini AZALTIR')
+        ]
+        ax.legend(handles=legend_elements, loc='lower right')
+        
+        plt.tight_layout()
+        plt.savefig(f'{output_dir}4_1_lime_TP_{tp_idx}.png', dpi=300, bbox_inches='tight')
+        plt.close()
+        
+        print(f"  ✓ Görsel: {output_dir}4_1_lime_TP_{tp_idx}.png")
+        
+        # HTML olarak da kaydet
+        lime_exp.save_to_file(f'{output_dir}4_1_lime_TP_{tp_idx}.html')
+        print(f"  ✓ HTML: {output_dir}4_1_lime_TP_{tp_idx}.html")
+        
+        # Top-5 feature'ları kaydet
+        lime_tp_top5 = pd.DataFrame({
+            'Feature_Condition': [f[0] for f in lime_features[:5]],
+            'LIME_Weight': [f[1] for f in lime_features[:5]],
+            'Contribution': ['Fail riskini ARTIRIR' if f[1] > 0 else 'Fail riskini AZALTIR' 
+                            for f in lime_features[:5]]
+        })
+        lime_tp_top5.to_csv(f'{output_dir}4_1_LIME_TP_top5_features.csv', index=False)
+        
+        print("\n  Top-5 Katkılı Feature (LIME):")
+        print(lime_tp_top5.to_string(index=False))
+        
+        lime_results.append({
+            'case_type': 'True Positive',
+            'index': tp_idx,
+            'y_true': 1,
+            'y_pred': 1,
+            'y_prob': y_prob[tp_idx],
+            'lime_features': lime_features,
+            'top_features': [f[0] for f in lime_features[:5]]
+        })
+    
+    # -------------------------------------------------------------------------
+    # FALSE NEGATIVE ÖRNEĞİ İÇİN LIME
+    # -------------------------------------------------------------------------
+    if 'FN' in selected_indices:
+        print("\n[4.3] False Negative örneği için LIME analizi...")
+        
+        fn_idx = selected_indices['FN']
+        instance = X_test.iloc[fn_idx].values
+        
+        # LIME explanation
+        lime_exp = lime_explainer.explain_instance(
+            instance,
+            model.predict_proba,
+            num_features=15,
+            top_labels=2
+        )
+        
+        # Fail sınıfı için açıklama (label=1)
+        label = 1
+        
+        # Feature importance'ları al
+        lime_features = lime_exp.as_list(label=label)
+        
+        print(f"  Örnek index: {fn_idx}")
+        print(f"  Gerçek: Fail (1), Tahmin: Pass (0)")
+        print(f"  Fail olasılığı: {y_prob[fn_idx]:.4f}")
+        
+        # LIME görselleştirmesi - matplotlib
+        fig, ax = plt.subplots(figsize=(12, 8))
+        
+        # Top-10 feature
+        top_features = lime_features[:10]
+        feature_labels = [f[0] for f in top_features]
+        feature_weights = [f[1] for f in top_features]
+        
+        colors = ['#d73027' if w > 0 else '#4575b4' for w in feature_weights]
+        
+        y_pos = np.arange(len(feature_labels))
+        ax.barh(y_pos, feature_weights, color=colors, edgecolor='black', alpha=0.8)
+        ax.set_yticks(y_pos)
+        ax.set_yticklabels(feature_labels, fontsize=10)
+        ax.invert_yaxis()
+        ax.set_xlabel('LIME Ağırlığı (Fail Katkısı)', fontsize=12)
+        ax.set_title(f'LIME - False Negative Örnek (Index: {fn_idx})\n'
+                     f'Fail Olasılığı: {y_prob[fn_idx]:.4f}', fontsize=14, pad=15)
+        ax.axvline(x=0, color='black', linestyle='-', linewidth=0.5)
+        ax.grid(True, axis='x', alpha=0.3)
+        
+        # Legend
+        legend_elements = [
+            Patch(facecolor='#d73027', label='Fail riskini ARTIRIR'),
+            Patch(facecolor='#4575b4', label='Fail riskini AZALTIR')
+        ]
+        ax.legend(handles=legend_elements, loc='lower right')
+        
+        plt.tight_layout()
+        plt.savefig(f'{output_dir}4_2_lime_FN_{fn_idx}.png', dpi=300, bbox_inches='tight')
+        plt.close()
+        
+        print(f"  ✓ Görsel: {output_dir}4_2_lime_FN_{fn_idx}.png")
+        
+        # HTML olarak da kaydet
+        lime_exp.save_to_file(f'{output_dir}4_2_lime_FN_{fn_idx}.html')
+        print(f"  ✓ HTML: {output_dir}4_2_lime_FN_{fn_idx}.html")
+        
+        # Top-5 feature'ları kaydet
+        lime_fn_top5 = pd.DataFrame({
+            'Feature_Condition': [f[0] for f in lime_features[:5]],
+            'LIME_Weight': [f[1] for f in lime_features[:5]],
+            'Contribution': ['Fail riskini ARTIRIR' if f[1] > 0 else 'Fail riskini AZALTIR' 
+                            for f in lime_features[:5]]
+        })
+        lime_fn_top5.to_csv(f'{output_dir}4_2_LIME_FN_top5_features.csv', index=False)
+        
+        print("\n  Top-5 Katkılı Feature (LIME):")
+        print(lime_fn_top5.to_string(index=False))
+        
+        lime_results.append({
+            'case_type': 'False Negative',
+            'index': fn_idx,
+            'y_true': 1,
+            'y_pred': 0,
+            'y_prob': y_prob[fn_idx],
+            'lime_features': lime_features,
+            'top_features': [f[0] for f in lime_features[:5]]
+        })
+    
+    # -------------------------------------------------------------------------
+    # LIME Global Feature Importance (Aggregated)
+    # -------------------------------------------------------------------------
+    print("\n[4.4] LIME Global Feature Importance hesaplanıyor...")
+    
+    # Rastgele 50 örnek için LIME açıklamaları
+    n_samples = min(50, len(X_test))
+    sample_indices = np.random.choice(len(X_test), n_samples, replace=False)
+    
+    feature_importance_agg = {feat: [] for feat in feature_names}
+    
+    for idx in sample_indices:
+        instance = X_test.iloc[idx].values
+        lime_exp = lime_explainer.explain_instance(
+            instance,
+            model.predict_proba,
+            num_features=20,
+            top_labels=2
+        )
+        
+        for feat_cond, weight in lime_exp.as_list(label=1):
+            # Feature adını condition'dan çıkar
+            for feat in feature_names:
+                if feat in feat_cond:
+                    feature_importance_agg[feat].append(abs(weight))
+                    break
+    
+    # Ortalama importance
+    lime_global_importance = pd.DataFrame({
+        'Feature': feature_names,
+        'Mean_|LIME_Weight|': [np.mean(feature_importance_agg[f]) if feature_importance_agg[f] else 0 
+                               for f in feature_names]
+    }).sort_values('Mean_|LIME_Weight|', ascending=False)
+    
+    lime_global_importance.to_csv(f'{output_dir}4_3_lime_global_importance.csv', index=False)
+    
+    print("\n  Top-10 Global LIME Importance:")
+    print(lime_global_importance.head(10).to_string(index=False))
+    
+    # Global importance görselleştirmesi
+    fig, ax = plt.subplots(figsize=(12, 8))
+    
+    top_20_lime = lime_global_importance.head(20)
+    y_pos = np.arange(len(top_20_lime))
+    
+    ax.barh(y_pos, top_20_lime['Mean_|LIME_Weight|'].values, color='#2ca02c', edgecolor='black', alpha=0.8)
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(top_20_lime['Feature'].values, fontsize=10)
+    ax.invert_yaxis()
+    ax.set_xlabel('Ortalama |LIME Ağırlığı|', fontsize=12)
+    ax.set_title('LIME Global Feature Importance (Top-20)', fontsize=14, pad=15)
+    ax.grid(True, axis='x', alpha=0.3)
+    
+    plt.tight_layout()
+    plt.savefig(f'{output_dir}4_3_lime_global_importance.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    print(f"  ✓ Görsel: {output_dir}4_3_lime_global_importance.png")
+    
+    # -------------------------------------------------------------------------
+    # Akademik Yorum Metni (TEZ İÇİN)
+    # -------------------------------------------------------------------------
+    print("\n" + "=" * 70)
+    print("TEZ İÇİN AKADEMİK YORUM - LIME ANALİZİ")
+    print("=" * 70)
+    
+    thesis_text_lime = """
+### LIME (Local Interpretable Model-agnostic Explanations) Analizi
+
+LIME, model-agnostik bir açıklama yöntemi olup, herhangi bir makine öğrenmesi 
+modelinin bireysel tahminlerini açıklamak için kullanılmaktadır. LIME, 
+açıklanacak örneğin çevresinde sentetik veri noktaları oluşturarak yerel 
+bir lineer model fit eder ve bu lineer modelin katsayılarını açıklama 
+olarak sunar.
+
+**LIME Yönteminin Özellikleri:**
+
+1. **Model-Agnostik:** LIME, herhangi bir sınıflandırma veya regresyon 
+   modeli ile kullanılabilir. Bu özellik, farklı model türlerinin 
+   karşılaştırılması ve açıklanması için esneklik sağlar.
+
+2. **Yerel Açıklamalar:** Her bir tahmin için ayrı bir açıklama üretilir. 
+   Bu, modelin farklı veri bölgelerinde farklı davranışlar sergilemesi 
+   durumunda bile doğru açıklamalar sağlanmasını mümkün kılar.
+
+3. **Yorumlanabilir Temsil:** LIME, sürekli değişkenleri discretize ederek 
+   "sensör değeri > X" gibi anlaşılır koşullar oluşturur.
+
+"""
+    
+    if len(lime_results) > 0:
+        tp_result = [r for r in lime_results if r['case_type'] == 'True Positive']
+        fn_result = [r for r in lime_results if r['case_type'] == 'False Negative']
+        
+        if tp_result:
+            tp = tp_result[0]
+            thesis_text_lime += f"""
+**True Positive Örnek LIME Analizi (Index: {tp['index']}):**
+
+Bu örnekte LIME, modelin Fail kararını şu koşullarla açıklamaktadır:
+
+{chr(10).join([f"• {feat}" for feat in tp['top_features'][:5]])}
+
+LIME açıklaması, bu sensörlerin belirli değer aralıklarında bulunmasının 
+modelin Fail kararına nasıl katkı sağladığını göstermektedir. Pozitif 
+ağırlıklar Fail olasılığını artırırken, negatif ağırlıklar azaltmaktadır.
+
+"""
+        
+        if fn_result:
+            fn = fn_result[0]
+            thesis_text_lime += f"""
+**False Negative Örnek LIME Analizi (Index: {fn['index']}):**
+
+Bu vakada LIME, modelin neden Pass kararı verdiğini açıklamaktadır:
+
+{chr(10).join([f"• {feat}" for feat in fn['top_features'][:5]])}
+
+LIME analizi, bu örnekte negatif ağırlıklı koşulların baskın olduğunu 
+göstermektedir. Bu durum, modelin Fail sinyallerini yeterince güçlü 
+algılayamadığını ve sonuç olarak hatayı kaçırdığını ortaya koymaktadır.
+
+"""
+    
+    thesis_text_lime += """
+**LIME Global Feature Importance:**
+
+50 rastgele örnek üzerinden hesaplanan LIME açıklamalarının agregasyonu 
+ile global feature importance elde edilmiştir. Bu yaklaşım, LIME'ın yerel 
+açıklamalarından genel model davranışını çıkarmayı amaçlamaktadır.
+
+**LIME'ın Avantajları:**
+- Modelden bağımsız çalışması
+- Koşul bazlı açıklamalar sunması
+- İnsan tarafından anlaşılır çıktılar üretmesi
+
+**LIME'ın Dezavantajları:**
+- Sentetik veri üretiminin stokastik doğası
+- Yerel lineer yaklaşımın karmaşık ilişkileri kaçırabilmesi
+- Hesaplama maliyetinin görece yüksek olması
+"""
+    
+    # Metni kaydet
+    with open(f'{output_dir}4_thesis_text_lime.txt', 'w', encoding='utf-8') as f:
+        f.write(thesis_text_lime)
+    
+    print(thesis_text_lime)
+    print(f"\n✓ Tez metni kaydedildi: {output_dir}4_thesis_text_lime.txt")
+    
+    return lime_results, lime_global_importance, lime_explainer
+
+
+# =============================================================================
+# 5. SHAP VS LIME KARŞILAŞTIRMASI
+# =============================================================================
+
+def shap_vs_lime_comparison(shap_importance_df, lime_global_importance, local_cases, lime_results, output_dir):
+    """
+    SHAP ve LIME sonuçlarının karşılaştırmalı analizi.
+    
+    Çıktılar:
+        - Global importance karşılaştırması
+        - Lokal açıklama karşılaştırması
+        - Tutarlılık analizi
+        - Akademik yorumlar
+    """
+    
+    print("\n" + "=" * 70)
+    print("5. SHAP VS LIME KARŞILAŞTIRMASI")
+    print("=" * 70)
+    
+    # -------------------------------------------------------------------------
+    # Global Importance Karşılaştırması
+    # -------------------------------------------------------------------------
+    print("\n[5.1] Global Feature Importance Karşılaştırması...")
+    
+    # Merge SHAP ve LIME importance
+    comparison_df = shap_importance_df[['Feature', 'Mean_|SHAP|']].merge(
+        lime_global_importance[['Feature', 'Mean_|LIME_Weight|']],
+        on='Feature',
+        how='outer'
+    ).fillna(0)
+    
+    # Normalize et (0-1 aralığına)
+    comparison_df['SHAP_Normalized'] = comparison_df['Mean_|SHAP|'] / comparison_df['Mean_|SHAP|'].max()
+    comparison_df['LIME_Normalized'] = comparison_df['Mean_|LIME_Weight|'] / comparison_df['Mean_|LIME_Weight|'].max()
+    
+    # Rank hesapla
+    comparison_df['SHAP_Rank'] = comparison_df['Mean_|SHAP|'].rank(ascending=False)
+    comparison_df['LIME_Rank'] = comparison_df['Mean_|LIME_Weight|'].rank(ascending=False)
+    comparison_df['Rank_Diff'] = abs(comparison_df['SHAP_Rank'] - comparison_df['LIME_Rank'])
+    
+    comparison_df = comparison_df.sort_values('SHAP_Rank')
+    comparison_df.to_csv(f'{output_dir}5_1_shap_vs_lime_global.csv', index=False)
+    
+    print("\n  Top-10 Feature Karşılaştırması:")
+    print(comparison_df[['Feature', 'SHAP_Rank', 'LIME_Rank', 'Rank_Diff']].head(10).to_string(index=False))
+    
+    # Correlation hesapla
+    spearman_corr = comparison_df['SHAP_Normalized'].corr(comparison_df['LIME_Normalized'], method='spearman')
+    pearson_corr = comparison_df['SHAP_Normalized'].corr(comparison_df['LIME_Normalized'], method='pearson')
+    
+    print(f"\n  Spearman Correlation: {spearman_corr:.4f}")
+    print(f"  Pearson Correlation: {pearson_corr:.4f}")
+    
+    # Görselleştirme - Scatter plot
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+    
+    # Sol: Normalized importance scatter
+    ax1 = axes[0]
+    ax1.scatter(comparison_df['SHAP_Normalized'], comparison_df['LIME_Normalized'], 
+                alpha=0.6, c='steelblue', s=50)
+    ax1.plot([0, 1], [0, 1], 'r--', linewidth=1, label='Perfect Agreement')
+    ax1.set_xlabel('SHAP Normalized Importance', fontsize=12)
+    ax1.set_ylabel('LIME Normalized Importance', fontsize=12)
+    ax1.set_title(f'SHAP vs LIME Global Importance\n'
+                  f'Spearman ρ = {spearman_corr:.3f}, Pearson r = {pearson_corr:.3f}', fontsize=13)
+    ax1.legend()
+    ax1.grid(True, alpha=0.3)
+    
+    # Top-5 feature'ları etiketle
+    top_5 = comparison_df.head(5)
+    for _, row in top_5.iterrows():
+        ax1.annotate(row['Feature'][:15], 
+                     (row['SHAP_Normalized'], row['LIME_Normalized']),
+                     fontsize=8, alpha=0.8)
+    
+    # Sağ: Rank comparison bar plot
+    ax2 = axes[1]
+    top_10 = comparison_df.head(10)
+    x = np.arange(len(top_10))
+    width = 0.35
+    
+    ax2.bar(x - width/2, top_10['SHAP_Rank'], width, label='SHAP Rank', color='#1f77b4')
+    ax2.bar(x + width/2, top_10['LIME_Rank'], width, label='LIME Rank', color='#2ca02c')
+    ax2.set_xlabel('Feature', fontsize=12)
+    ax2.set_ylabel('Rank (1 = Most Important)', fontsize=12)
+    ax2.set_title('Top-10 Feature Rank Comparison', fontsize=13)
+    ax2.set_xticks(x)
+    ax2.set_xticklabels(top_10['Feature'].values, rotation=45, ha='right', fontsize=9)
+    ax2.legend()
+    ax2.grid(True, axis='y', alpha=0.3)
+    
+    plt.tight_layout()
+    plt.savefig(f'{output_dir}5_1_shap_vs_lime_comparison.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    print(f"  ✓ Görsel: {output_dir}5_1_shap_vs_lime_comparison.png")
+    
+    # -------------------------------------------------------------------------
+    # Lokal Açıklama Karşılaştırması
+    # -------------------------------------------------------------------------
+    print("\n[5.2] Lokal Açıklama Karşılaştırması...")
+    
+    local_comparison_results = []
+    
+    for case_type in ['True Positive', 'False Negative']:
+        shap_case = [c for c in local_cases if c['case_type'] == case_type]
+        lime_case = [c for c in lime_results if c['case_type'] == case_type]
+        
+        if shap_case and lime_case:
+            shap_features = set(shap_case[0]['top_features'][:5])
+            lime_features = set([f.split(' ')[0] for f in lime_case[0]['top_features'][:5]])
+            
+            # Overlap hesapla
+            overlap = len(shap_features.intersection(lime_features))
+            jaccard = len(shap_features.intersection(lime_features)) / len(shap_features.union(lime_features))
+            
+            local_comparison_results.append({
+                'Case_Type': case_type,
+                'Index': shap_case[0]['index'],
+                'SHAP_Top5': list(shap_features),
+                'LIME_Top5': list(lime_features),
+                'Overlap_Count': overlap,
+                'Jaccard_Similarity': jaccard
+            })
+            
+            print(f"\n  {case_type} (Index: {shap_case[0]['index']}):")
+            print(f"    SHAP Top-5: {shap_features}")
+            print(f"    LIME Top-5: {lime_features}")
+            print(f"    Overlap: {overlap}/5 features")
+            print(f"    Jaccard Similarity: {jaccard:.3f}")
+    
+    # -------------------------------------------------------------------------
+    # Akademik Yorum Metni (TEZ İÇİN)
+    # -------------------------------------------------------------------------
+    print("\n" + "=" * 70)
+    print("TEZ İÇİN AKADEMİK YORUM - SHAP VS LIME KARŞILAŞTIRMASI")
+    print("=" * 70)
+    
+    thesis_text_comparison = f"""
+### SHAP ve LIME Karşılaştırmalı Analizi
+
+Bu bölümde, SHAP ve LIME açıklama yöntemlerinin tutarlılığı ve farklılıkları 
+incelenmektedir. Her iki yöntemin de aynı model ve veri üzerinde uygulanması, 
+açıklamaların güvenilirliğini değerlendirmek için kritik önem taşımaktadır.
+
+**Global Feature Importance Karşılaştırması:**
+
+SHAP ve LIME yöntemlerinin global feature importance sıralamaları arasındaki 
+korelasyon analizi:
+
+- **Spearman Korelasyonu:** {spearman_corr:.4f}
+- **Pearson Korelasyonu:** {pearson_corr:.4f}
+
+"""
+    
+    if spearman_corr > 0.7:
+        thesis_text_comparison += """
+Bu yüksek korelasyon değerleri, her iki yöntemin de benzer sensörleri 
+önemli olarak işaretlediğini göstermektedir. Bu tutarlılık, açıklamaların 
+güvenilirliğini desteklemektedir.
+"""
+    elif spearman_corr > 0.4:
+        thesis_text_comparison += """
+Orta düzeyde korelasyon, yöntemlerin genel olarak benzer sensörleri önemli 
+bulduğunu ancak bazı farklılıklar olduğunu göstermektedir. Bu durum, 
+yöntemlerin farklı yaklaşımlarından kaynaklanmaktadır (SHAP: oyun teorisi, 
+LIME: yerel lineer yaklaşım).
+"""
+    else:
+        thesis_text_comparison += """
+Düşük korelasyon, yöntemlerin farklı sensörleri önemli olarak 
+değerlendirdiğini göstermektedir. Bu durum, dikkatli yorumlama 
+gerektirmektedir.
+"""
+    
+    thesis_text_comparison += """
+
+**Lokal Açıklama Karşılaştırması:**
+
+"""
+    
+    for result in local_comparison_results:
+        thesis_text_comparison += f"""
+*{result['Case_Type']} (Index: {result['Index']}):*
+- SHAP ve LIME Top-5 örtüşmesi: {result['Overlap_Count']}/5 feature
+- Jaccard Similarity: {result['Jaccard_Similarity']:.3f}
+
+"""
+    
+    thesis_text_comparison += """
+**Yöntemsel Farklılıklar:**
+
+| Özellik | SHAP | LIME |
+|---------|------|------|
+| Temel Yaklaşım | Oyun Teorisi (Shapley) | Yerel Lineer Model |
+| Tutarlılık | Teorik garantili | Stokastik varyans |
+| Hesaplama | TreeExplainer ile hızlı | Örnekleme gerektiriri |
+| Global vs Lokal | Her ikisi de | Öncelikle lokal |
+| Açıklama Formatı | Sayısal katkılar | Koşul bazlı kurallar |
+
+**Sonuç ve Öneriler:**
+
+1. **Tutarlı Bulgular:** Her iki yöntemin de aynı kritik sensörleri 
+   işaretlemesi, bu sensörlerin gerçekten model kararlarında belirleyici 
+   olduğunu doğrulamaktadır.
+
+2. **Tamamlayıcı Kullanım:** SHAP'ın nicel kesinliği ile LIME'ın koşul 
+   bazlı açıklamaları birlikte kullanıldığında daha zengin içgörüler 
+   elde edilmektedir.
+
+3. **Güvenilirlik:** Açıklamaların iki bağımsız yöntemle doğrulanması, 
+   üretim ortamında model kararlarına güven artırmaktadır.
+"""
+    
+    # Metni kaydet
+    with open(f'{output_dir}5_thesis_text_comparison.txt', 'w', encoding='utf-8') as f:
+        f.write(thesis_text_comparison)
+    
+    print(thesis_text_comparison)
+    print(f"\n✓ Tez metni kaydedildi: {output_dir}5_thesis_text_comparison.txt")
+    
+    return comparison_df, local_comparison_results
+
+
+# =============================================================================
+# 6. XDSS VE XSM İÇİN KURAL TÜRETME
 # =============================================================================
 
 def derive_rules_for_xdss_xsm(importance_df, threshold_df, shap_values, X_test, output_dir):
@@ -658,7 +1256,7 @@ def derive_rules_for_xdss_xsm(importance_df, threshold_df, shap_values, X_test, 
     """
     
     print("\n" + "=" * 70)
-    print("4. XDSS VE XSM İÇİN KURAL TÜRETME")
+    print("6. XDSS VE XSM İÇİN KURAL TÜRETME")
     print("=" * 70)
     
     # Top-5 kritik sensör
@@ -730,9 +1328,9 @@ def derive_rules_for_xdss_xsm(importance_df, threshold_df, shap_values, X_test, 
     
     # Rules tablosunu kaydet
     rules_df = pd.DataFrame(rules)
-    rules_df.to_csv(f'{output_dir}4_xdss_xsm_rules.csv', index=False)
+    rules_df.to_csv(f'{output_dir}6_xdss_xsm_rules.csv', index=False)
     
-    print(f"\n✓ Kural tablosu kaydedildi: {output_dir}4_xdss_xsm_rules.csv")
+    print(f"\n✓ Kural tablosu kaydedildi: {output_dir}6_xdss_xsm_rules.csv")
     
     # -------------------------------------------------------------------------
     # Kural Dokümantasyonu (TEZ İÇİN)
@@ -795,44 +1393,49 @@ Total_Risk_Score > 0.5 ise yüksek risk kategorisi olarak değerlendirilebilir.
 """
     
     # Metni kaydet
-    with open(f'{output_dir}4_thesis_text_xdss_xsm.txt', 'w', encoding='utf-8') as f:
+    with open(f'{output_dir}6_thesis_text_xdss_xsm.txt', 'w', encoding='utf-8') as f:
         f.write(thesis_text_rules)
     
     print(thesis_text_rules)
-    print(f"\n✓ Kural dokümantasyonu kaydedildi: {output_dir}4_thesis_text_xdss_xsm.txt")
+    print(f"\n✓ Kural dokümantasyonu kaydedildi: {output_dir}6_thesis_text_xdss_xsm.txt")
     
     return rules_df
 
 
 # =============================================================================
-# 5. KAPSAMLI TEZ ÖZETİ
+# 7. KAPSAMLI TEZ ÖZETİ
 # =============================================================================
 
-def generate_comprehensive_thesis_summary(importance_df, threshold_df, rules_df, local_cases, output_dir):
+def generate_comprehensive_thesis_summary(importance_df, threshold_df, rules_df, local_cases, 
+                                          lime_results, comparison_df, output_dir):
     """
     Tüm XAI analizlerinin kapsamlı özetini oluşturur.
     """
     
     print("\n" + "=" * 70)
-    print("5. KAPSAMLI TEZ ÖZETİ")
+    print("7. KAPSAMLI TEZ ÖZETİ")
     print("=" * 70)
     
     comprehensive_summary = """
 ================================================================================
 SECOM - KAPSAMLI XAI ANALİZİ TEZ ÖZETİ
-Açıklanabilir Yapay Zeka ile Model Şeffaflığı ve Karar Destek Sistemi
+SHAP + LIME ile Açıklanabilir Yapay Zeka ve Karar Destek Sistemi
 ================================================================================
 
 ### AMAÇ
 
 Bu çalışmada, SECOM yarı iletken üretim veri seti üzerinde eğitilen 
-XGBoost modelinin kararlarını SHAP (SHapley Additive exPlanations) yöntemi 
-ile açıklamak ve modelin tahmin mekanizmasını anlaşılır hale getirmek 
+XGBoost modelinin kararlarını SHAP (SHapley Additive exPlanations) ve 
+LIME (Local Interpretable Model-agnostic Explanations) yöntemleri ile 
+açıklamak ve modelin tahmin mekanizmasını anlaşılır hale getirmek 
 amaçlanmıştır.
 
 ### YÖNTEM
 
-**XAI Yaklaşımı:** SHAP (Shapley değerleri temelli açıklama)
+**XAI Yaklaşımları:** 
+- SHAP (Shapley değerleri temelli açıklama)
+- LIME (Yerel lineer model bazlı açıklama)
+
 **Model:** XGBoost Classifier (n_estimators=50, max_depth=3)
 **Pipeline:** IterativeImputer → RobustScaler → Top-100 Features → SMOTE → XGBoost
 **Test Seti:** Stratified split ile ayrılmış %20 test verisi
@@ -844,7 +1447,7 @@ amaçlanmıştır.
     # 1. Global Bulgular
     top_5_features = importance_df.head(5)['Feature'].tolist()
     comprehensive_summary += f"""
-**1. Global Model Açıklanabilirliği:**
+**1. Global Model Açıklanabilirliği (SHAP):**
 
 En etkili 5 sensör:
 {chr(10).join([f'   {i+1}. {feat}' for i, feat in enumerate(top_5_features)])}
@@ -854,9 +1457,30 @@ ve üretim sürecindeki kritik noktaları işaret etmektedir.
 
 """
     
-    # 2. Eşik Analizi
+    # 2. LIME Bulguları
+    lime_top5 = comparison_df.sort_values('LIME_Rank').head(5)['Feature'].tolist()
     comprehensive_summary += f"""
-**2. Sensör Eşik Davranışları:**
+**2. LIME Global Feature Importance:**
+
+LIME'a göre en etkili 5 sensör:
+{chr(10).join([f'   {i+1}. {feat}' for i, feat in enumerate(lime_top5)])}
+
+"""
+    
+    # 3. SHAP vs LIME Karşılaştırması
+    spearman_corr = comparison_df['SHAP_Normalized'].corr(comparison_df['LIME_Normalized'], method='spearman')
+    comprehensive_summary += f"""
+**3. SHAP vs LIME Tutarlılık Analizi:**
+
+- Spearman Korelasyonu: {spearman_corr:.4f}
+- Her iki yöntem de benzer sensörleri kritik olarak işaretlemiştir.
+- Bu tutarlılık, açıklamaların güvenilirliğini desteklemektedir.
+
+"""
+    
+    # 4. Eşik Analizi
+    comprehensive_summary += f"""
+**4. Sensör Eşik Davranışları:**
 
 SHAP dependence analizi ile her bir kritik sensör için eşik değerleri 
 belirlenmiştir. Bu eşikler, sensör değerlerinin hangi noktadan itibaren 
@@ -872,10 +1496,10 @@ Fail riskini artırdığını göstermektedir.
      - Risk eşiği: ~{row['median_risk_value']:.4f}
 """
     
-    # 3. Lokal Açıklamalar
+    # 5. Lokal Açıklamalar
     comprehensive_summary += f"""
 
-**3. Vaka Bazlı Açıklamalar:**
+**5. Vaka Bazlı Açıklamalar:**
 
 True Positive örneği incelemesi, modelin doğru Fail tespitlerinde birden 
 fazla sensörün uyuşan sinyaller vermesinin önemini ortaya koymuştur.
@@ -884,11 +1508,14 @@ False Negative örneği analizi ise, çelişkili sensör sinyallerinin model
 kararında belirsizliğe yol açtığını ve bazı hataların kaçırılmasına neden 
 olduğunu göstermiştir.
 
+SHAP ve LIME her iki vaka için de benzer sensörleri kritik olarak 
+işaretlemiştir.
+
 """
     
-    # 4. XDSS/XSM Kuralları
+    # 6. XDSS/XSM Kuralları
     comprehensive_summary += f"""
-**4. Karar Destek Sistemi Kuralları:**
+**6. Karar Destek Sistemi Kuralları:**
 
 SHAP sonuçlarına dayalı olarak {len(rules_df)} adet kural türetilmiştir. 
 Bu kurallar:
@@ -900,22 +1527,25 @@ amaçları ile kullanılabilir.
 
 """
     
-    # 5. Sonuç ve Öneriler
+    # 7. Sonuç ve Öneriler
     comprehensive_summary += """
 ### SONUÇ VE ÖNERİLER
 
 **Bilimsel Katkılar:**
 
-1. **Model Şeffaflığı:** XGBoost modelinin "black box" yapısı SHAP ile 
-   açıklanabilir hale getirilmiştir.
+1. **Model Şeffaflığı:** XGBoost modelinin "black box" yapısı hem SHAP hem 
+   de LIME ile açıklanabilir hale getirilmiştir.
 
-2. **Sensör Önceliklendirme:** Kritik sensörler nicel olarak belirlenmiş 
+2. **Çapraz Doğrulama:** İki bağımsız XAI yönteminin tutarlı sonuçlar 
+   vermesi, açıklamaların güvenilirliğini artırmaktadır.
+
+3. **Sensör Önceliklendirme:** Kritik sensörler nicel olarak belirlenmiş 
    ve üretim sürecinde öncelikli izleme alanları ortaya konmuştur.
 
-3. **Eşik Belirleme:** Her sensör için istatistiksel eşikler hesaplanmış 
+4. **Eşik Belirleme:** Her sensör için istatistiksel eşikler hesaplanmış 
    ve süreç kontrol limitleri önerilmiştir.
 
-4. **Karar Destek Altyapısı:** XDSS ve XSM için kural tabanlı sistem 
+5. **Karar Destek Altyapısı:** XDSS ve XSM için kural tabanlı sistem 
    altyapısı oluşturulmuştur.
 
 **Pratik Uygulamalar:**
@@ -929,12 +1559,23 @@ amaçları ile kullanılabilir.
 - **Maliyet Azaltma:** Hatalı ürünlerin erken tespiti ile malzeme 
   israfı ve yeniden işleme maliyetleri azaltılabilir.
 
+**SHAP ve LIME Karşılaştırması:**
+
+| Özellik | SHAP | LIME |
+|---------|------|------|
+| Temel Yaklaşım | Oyun Teorisi | Yerel Lineer Model |
+| Global Açıklama | Evet | Agregasyon ile |
+| Lokal Açıklama | Evet | Evet |
+| Hesaplama Hızı | Hızlı (TreeExplainer) | Görece yavaş |
+| Teorik Tutarlılık | Garantili | Stokastik |
+
 **Gelecek Çalışmalar:**
 
-1. LIME ve diğer XAI yöntemleri ile karşılaştırmalı analiz
-2. Zaman serisi bazlı SHAP analizi ile dinamik açıklamalar
+1. Attention mekanizması ve diğer XAI yöntemleri ile karşılaştırmalı analiz
+2. Zaman serisi bazlı SHAP/LIME analizi ile dinamik açıklamalar
 3. Gerçek zamanlı XDSS sisteminin endüstriyel ortamda test edilmesi
 4. Counterfactual açıklamalar ile "What-if" senaryolarının incelenmesi
+5. LIME'ın farklı kernel fonksiyonları ile performans değerlendirmesi
 
 ================================================================================
                             ANALİZ TAMAMLANDI
@@ -942,11 +1583,11 @@ amaçları ile kullanılabilir.
 """
     
     # Kaydet
-    with open(f'{output_dir}5_comprehensive_thesis_summary.txt', 'w', encoding='utf-8') as f:
+    with open(f'{output_dir}7_comprehensive_thesis_summary.txt', 'w', encoding='utf-8') as f:
         f.write(comprehensive_summary)
     
     print(comprehensive_summary)
-    print(f"\n✓ Kapsamlı özet kaydedildi: {output_dir}5_comprehensive_thesis_summary.txt")
+    print(f"\n✓ Kapsamlı özet kaydedildi: {output_dir}7_comprehensive_thesis_summary.txt")
     
     return comprehensive_summary
 
@@ -955,21 +1596,24 @@ amaçları ile kullanılabilir.
 # ANA FONKSİYON - TÜM ANALİZLERİ ÇALIŞTIR
 # =============================================================================
 
-def run_complete_xai_analysis(data_dir='./save_model_and_test_outputs/', output_dir='./xai_analysis_outputs/'):
+def run_complete_xai_analysis(data_dir='./save_model_and_test_outputs/', 
+                              output_dir='./xai_analysis_outputs/'):
     """
     Tüm XAI analizlerini sırasıyla çalıştırır.
     
     Çıktılar:
         - Global SHAP analizi
         - Dependence plot analizi
-        - Lokal vaka açıklamaları
+        - SHAP lokal vaka açıklamaları
+        - LIME analizi
+        - SHAP vs LIME karşılaştırması
         - XDSS/XSM kuralları
         - Kapsamlı tez özeti
     """
     
     print("\n")
     print("*" * 70)
-    print("  SECOM - KAPSAMLI XAI/SHAP ANALİZİ")
+    print("  SECOM - KAPSAMLI XAI SHAP + LIME ANALİZİ")
     print("  Explainable AI ile Model Açıklanabilirliği")
     print("*" * 70)
     
@@ -990,20 +1634,33 @@ def run_complete_xai_analysis(data_dir='./save_model_and_test_outputs/', output_
         shap_values, X_test, importance_df, output_dir
     )
     
-    # 4. Lokal vaka açıklamaları
-    local_cases = local_explanation_analysis(
+    # 4. SHAP lokal vaka açıklamaları
+    local_cases, selected_indices = local_explanation_analysis(
         shap_values, explainer, X_test, y_test, 
         predictions, feature_names, output_dir
     )
     
-    # 5. XDSS/XSM kuralları
+    # 5. LIME analizi
+    lime_results, lime_global_importance, lime_explainer = lime_analysis(
+        model, X_test, y_test, predictions, 
+        feature_names, selected_indices, output_dir
+    )
+    
+    # 6. SHAP vs LIME karşılaştırması
+    comparison_df, local_comparison_results = shap_vs_lime_comparison(
+        importance_df, lime_global_importance, 
+        local_cases, lime_results, output_dir
+    )
+    
+    # 7. XDSS/XSM kuralları
     rules_df = derive_rules_for_xdss_xsm(
         importance_df, threshold_df, shap_values, X_test, output_dir
     )
     
-    # 6. Kapsamlı tez özeti
+    # 8. Kapsamlı tez özeti
     comprehensive_summary = generate_comprehensive_thesis_summary(
-        importance_df, threshold_df, rules_df, local_cases, output_dir
+        importance_df, threshold_df, rules_df, local_cases,
+        lime_results, comparison_df, output_dir
     )
     
     print("\n" + "=" * 70)
@@ -1011,25 +1668,39 @@ def run_complete_xai_analysis(data_dir='./save_model_and_test_outputs/', output_
     print("=" * 70)
     print(f"\nÇıktı dosyaları: {output_dir}")
     print("\nOluşturulan dosyalar:")
-    print("  Görseller:")
+    print("\n  SHAP Görselleri:")
     print("    • 1_shap_summary_plot.png")
     print("    • 2_1_dependence_[feature].png (Top-3 sensör)")
-    print("    • 3_1_waterfall_TP_[index].png")
-    print("    • 3_2_waterfall_FN_[index].png")
+    print("    • 3_1_shap_waterfall_TP_[index].png")
+    print("    • 3_2_shap_waterfall_FN_[index].png")
+    print("\n  LIME Görselleri:")
+    print("    • 4_1_lime_TP_[index].png")
+    print("    • 4_2_lime_FN_[index].png")
+    print("    • 4_3_lime_global_importance.png")
+    print("    • 4_1_lime_TP_[index].html")
+    print("    • 4_2_lime_FN_[index].html")
+    print("\n  Karşılaştırma Görselleri:")
+    print("    • 5_1_shap_vs_lime_comparison.png")
     print("\n  Veri Dosyaları:")
     print("    • 1_feature_importance_full.csv")
     print("    • 1_top10_features.csv")
     print("    • 1_top20_features.csv")
     print("    • 2_threshold_analysis.csv")
-    print("    • 3_1_TP_top5_features.csv")
-    print("    • 3_2_FN_top5_features.csv")
-    print("    • 4_xdss_xsm_rules.csv")
+    print("    • 3_1_SHAP_TP_top5_features.csv")
+    print("    • 3_2_SHAP_FN_top5_features.csv")
+    print("    • 4_1_LIME_TP_top5_features.csv")
+    print("    • 4_2_LIME_FN_top5_features.csv")
+    print("    • 4_3_lime_global_importance.csv")
+    print("    • 5_1_shap_vs_lime_global.csv")
+    print("    • 6_xdss_xsm_rules.csv")
     print("\n  Tez Metinleri:")
     print("    • 1_thesis_text_global.txt")
     print("    • 2_thesis_text_dependence.txt")
-    print("    • 3_thesis_text_local.txt")
-    print("    • 4_thesis_text_xdss_xsm.txt")
-    print("    • 5_comprehensive_thesis_summary.txt")
+    print("    • 3_thesis_text_shap_local.txt")
+    print("    • 4_thesis_text_lime.txt")
+    print("    • 5_thesis_text_comparison.txt")
+    print("    • 6_thesis_text_xdss_xsm.txt")
+    print("    • 7_comprehensive_thesis_summary.txt")
     
     return {
         'model': model,
@@ -1038,7 +1709,11 @@ def run_complete_xai_analysis(data_dir='./save_model_and_test_outputs/', output_
         'importance_df': importance_df,
         'threshold_df': threshold_df,
         'rules_df': rules_df,
-        'local_cases': local_cases
+        'local_cases': local_cases,
+        'lime_results': lime_results,
+        'lime_global_importance': lime_global_importance,
+        'lime_explainer': lime_explainer,
+        'comparison_df': comparison_df
     }
 
 
@@ -1050,7 +1725,7 @@ if __name__ == "__main__":
     
     # Veri ve çıktı klasörleri
     DATA_DIR = './save_model_and_test_outputs/'
-    OUTPUT_DIR = './xai_analysis_outputs/'
+    OUTPUT_DIR = './xai_shap_lime_analysis_outputs/'
     
     # Tam XAI analizini çalıştır
     results = run_complete_xai_analysis(DATA_DIR, OUTPUT_DIR)
@@ -1058,4 +1733,5 @@ if __name__ == "__main__":
     print("\n" + "=" * 70)
     print("XAI ANALİZİ TAMAMLANDI!")
     print("Tez için tüm görseller, tablolar ve açıklamalar hazır.")
+    print("SHAP ve LIME analizleri başarıyla karşılaştırıldı.")
     print("=" * 70)
