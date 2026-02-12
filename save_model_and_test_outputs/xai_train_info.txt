@@ -1,0 +1,45 @@
+SECOM - Final Model Eğitim Bilgileri (Pipeline v2)
+==================================================
+Tarih: Kalibrasyon Deneyi Sonrası Nihai Model
+
+VERİ BÖLÜMÜ:
+  Train:      1002 örnek (Fail: 66)
+  Validation: 251 örnek (Fail: 17)
+  Test:       314 örnek (Fail: 21)
+
+PİPELINE ADIMLARI:
+  1. IterativeImputer (MICE, max_iter=10)
+  2. RobustScaler
+  3. VarianceThreshold (threshold=0.01) → 9 feature kaldırıldı → 433 kaldı
+  4. SMOTE (ratio=50%) → Fail: 66 → 468
+  5. XGBClassifier (scale_pos_weight=2.0000)
+  6. Threshold Optimizasyonu → best_threshold=0.290
+
+MODEL PARAMETRELERİ:
+  n_estimators: 100
+  max_depth: 6
+  learning_rate: 0.1
+  scale_pos_weight: 2.0000
+  tree_method: hist
+  random_state: 42
+
+TEST SONUÇLARI (threshold=0.290):
+  F1_fail:       0.1333
+  Recall_fail:   0.0952
+  Precision_fail:0.2222
+  ROC-AUC:       0.6797
+  PR-AUC:        0.1707
+  Brier Score:   0.0633
+
+CONFUSION MATRIX:
+  TP=2, FP=7, FN=19, TN=286
+
+KARŞILAŞTIRMA (Default 0.5 vs Optimize 0.29):
+  F1_fail:   0.0870 → 0.1333
+  Recall:    0.0476 → 0.0952
+  Precision: 0.5000 → 0.2222
+
+NOT:
+  5-Fold CV sonuçları: F1_fail=0.1581 ± 0.0499
+  Bu model tek bir split üzerinde eğitilmiştir.
+  XAI analizi bu model üzerinden yapılacaktır.

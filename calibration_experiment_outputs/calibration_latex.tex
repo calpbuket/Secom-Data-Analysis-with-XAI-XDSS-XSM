@@ -1,0 +1,28 @@
+\begin{table}[htbp]
+\centering
+\caption{Kalibrasyon Deney Sonuçları – Test Seti Metrikleri}
+\label{tab:calibration_experiment}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{ll|ccccc|c}
+\toprule
+\textbf{Senaryo} & \textbf{Model} & \textbf{F1$_{fail}$} & \textbf{Recall} & \textbf{Precision} & \textbf{ROC-AUC} & \textbf{PR-AUC} & \textbf{Brier Score} \\
+\midrule
+1_NoAugmentation & XGBoost & 0.0000 & 0.0000 & 0.0000 & 0.7892 & 0.2352 & 0.0606 \\
+ & LightGBM & 0.0870 & 0.0476 & 0.5000 & 0.7515 & 0.1798 & 0.0619 \\
+ & RandomForest & 0.0000 & 0.0000 & 0.0000 & 0.7860 & 0.2086 & 0.0583 \\
+\midrule
+2_SMOTE_10pct & XGBoost & 0.0000 & 0.0000 & 0.0000 & 0.8027 & 0.2072 & 0.0615 \\
+ & LightGBM & 0.1667 & 0.0952 & 0.6667 & 0.8053 & 0.2146 & 0.0614 \\
+ & RandomForest & 0.0000 & 0.0000 & 0.0000 & 0.7912 & 0.2741 & 0.0581 \\
+\midrule
+3_SMOTE_33pct & XGBoost & 0.0800 & 0.0476 & 0.2500 & 0.7392 & 0.1849 & 0.0610 \\
+ & LightGBM & 0.1667 & 0.0952 & 0.6667 & 0.7357 & 0.2261 & 0.0636 \\
+ & RandomForest & 0.0000 & 0.0000 & 0.0000 & 0.7668 & 0.1679 & 0.0690 \\
+\midrule
+4_SMOTE_50pct & XGBoost & 0.1667 & 0.0952 & 0.6667 & 0.7517 & 0.2341 & 0.0609 \\
+ & LightGBM & 0.0870 & 0.0476 & 0.5000 & 0.7229 & 0.1383 & 0.0653 \\
+ & RandomForest & 0.0000 & 0.0000 & 0.0000 & 0.7481 & 0.1300 & 0.0730 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
