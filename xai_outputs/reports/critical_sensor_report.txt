@@ -1,0 +1,76 @@
+SECOM — KRİTİK SENSÖR RAPORU
+=================================================================
+
+Bu rapor, SHAP analizi ile tespit edilen kritik sensörleri listeler.
+Yüksek Mean |SHAP| = Model bu sensöre çok önem veriyor
+                   = Bu sensörde anomali → muhtemelen Fail
+
+
+============================================================
+XGBoost — Top 20 Kritik Sensör
+============================================================
+   1. 59                      Mean |SHAP| = 0.840663
+   2. 419                     Mean |SHAP| = 0.365080
+   3. 130                     Mean |SHAP| = 0.335090
+   4. 460                     Mean |SHAP| = 0.305468
+   5. 486                     Mean |SHAP| = 0.275342
+   6. 377                     Mean |SHAP| = 0.237595
+   7. 16                      Mean |SHAP| = 0.234195
+   8. 433                     Mean |SHAP| = 0.184823
+   9. 67                      Mean |SHAP| = 0.182032
+  10. 563                     Mean |SHAP| = 0.176597
+  11. 90                      Mean |SHAP| = 0.170854
+  12. 33                      Mean |SHAP| = 0.165643
+  13. 281                     Mean |SHAP| = 0.160575
+  14. 254                     Mean |SHAP| = 0.159306
+  15. 423                     Mean |SHAP| = 0.159178
+  16. 118                     Mean |SHAP| = 0.152233
+  17. 19                      Mean |SHAP| = 0.143760
+  18. 124                     Mean |SHAP| = 0.140045
+  19. 35                      Mean |SHAP| = 0.136870
+  20. 0                       Mean |SHAP| = 0.136543
+
+============================================================
+LightGBM — Top 20 Kritik Sensör
+============================================================
+   1. 59                      Mean |SHAP| = 1.261042
+   2. 486                     Mean |SHAP| = 0.758375
+   3. 419                     Mean |SHAP| = 0.705156
+   4. 130                     Mean |SHAP| = 0.593130
+   5. 377                     Mean |SHAP| = 0.513707
+   6. 460                     Mean |SHAP| = 0.460354
+   7. 433                     Mean |SHAP| = 0.403062
+   8. 33                      Mean |SHAP| = 0.348383
+   9. 90                      Mean |SHAP| = 0.339560
+  10. 19                      Mean |SHAP| = 0.306530
+  11. 254                     Mean |SHAP| = 0.303784
+  12. 213                     Mean |SHAP| = 0.301703
+  13. 280                     Mean |SHAP| = 0.283555
+  14. 16                      Mean |SHAP| = 0.282255
+  15. 118                     Mean |SHAP| = 0.278794
+  16. 56                      Mean |SHAP| = 0.272652
+  17. 438                     Mean |SHAP| = 0.266120
+  18. 91                      Mean |SHAP| = 0.261425
+  19. 15                      Mean |SHAP| = 0.261378
+  20. 124                     Mean |SHAP| = 0.261083
+
+
+============================================================
+TÜM MODELLERDE ORTAK KRİTİK SENSÖRLER
+============================================================
+(En az 2 modelin Top-20 listesinde bulunanlar)
+
+  59                         2/2 modelde kritik
+  419                        2/2 modelde kritik
+  130                        2/2 modelde kritik
+  460                        2/2 modelde kritik
+  486                        2/2 modelde kritik
+  377                        2/2 modelde kritik
+  16                         2/2 modelde kritik
+  433                        2/2 modelde kritik
+  90                         2/2 modelde kritik
+  33                         2/2 modelde kritik
+  254                        2/2 modelde kritik
+  118                        2/2 modelde kritik
+  19                         2/2 modelde kritik
+  124                        2/2 modelde kritik

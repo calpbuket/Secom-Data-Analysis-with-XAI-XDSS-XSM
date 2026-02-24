@@ -1,0 +1,61 @@
+LIME Analizi — LightGBM
+=================================================================
+
+Yorum Kılavuzu:
+  Pozitif ağırlık → bu koşul Fail olasılığını ARTIRIYOR
+  Negatif ağırlık → bu koşul Fail olasılığını AZALTIYOR
+
+Örnek 1  (test_idx=271, Fail Olasılığı=0.9666)
+--------------------------------------------------
+  126 > 0.45                                     +0.0061   ↑ FAIL ARTIRIYOR
+  0.00 < 490 <= 0.54                             +0.0051   ↑ FAIL ARTIRIYOR
+  0.00 < 117 <= 0.49                             +0.0049   ↑ FAIL ARTIRIYOR
+  0.00 < 16 <= 0.50                              +0.0044   ↑ FAIL ARTIRIYOR
+  -0.72 < 56 <= 0.00                             +0.0044   ↑ FAIL ARTIRIYOR
+  103 > 0.53                                     +0.0042   ↑ FAIL ARTIRIYOR
+  0.00 < 3 <= 0.60                               +0.0040   ↑ FAIL ARTIRIYOR
+  0.00 < 197 <= 0.47                             +0.0040   ↑ FAIL ARTIRIYOR
+  -0.51 < 88 <= -0.00                            +0.0039   ↑ FAIL ARTIRIYOR
+  -0.47 < 137 <= 0.00                            +0.0039   ↑ FAIL ARTIRIYOR
+  -0.91 < 25 <= 0.00                             +0.0038   ↑ FAIL ARTIRIYOR
+  0.00 < 143 <= 0.63                             +0.0037   ↑ FAIL ARTIRIYOR
+  77 <= -0.52                                    +0.0036   ↑ FAIL ARTIRIYOR
+  0.00 < 419 <= 0.52                             +0.0030   ↑ FAIL ARTIRIYOR
+  482 > 0.43                                     +0.0029   ↑ FAIL ARTIRIYOR
+
+Örnek 2  (test_idx=233, Fail Olasılığı=0.0742)
+--------------------------------------------------
+  59 > 0.55                                      +0.0094   ↑ FAIL ARTIRIYOR
+  213 <= -0.53                                   -0.0040   ↓ fail azalıyor
+  197 <= -0.53                                   -0.0037   ↓ fail azalıyor
+  -0.00 < 35 <= 0.54                             +0.0037   ↑ FAIL ARTIRIYOR
+  19 > 0.52                                      +0.0034   ↑ FAIL ARTIRIYOR
+  91 > 0.53                                      -0.0034   ↓ fail azalıyor
+  482 > 0.43                                     +0.0031   ↑ FAIL ARTIRIYOR
+  33 > 0.59                                      +0.0030   ↑ FAIL ARTIRIYOR
+  61 <= -0.52                                    -0.0030   ↓ fail azalıyor
+  55 > 0.51                                      +0.0029   ↑ FAIL ARTIRIYOR
+  16 <= -0.50                                    -0.0028   ↓ fail azalıyor
+  510 > 0.61                                     +0.0028   ↑ FAIL ARTIRIYOR
+  252 > 0.59                                     +0.0027   ↑ FAIL ARTIRIYOR
+  130 > 0.43                                     +0.0027   ↑ FAIL ARTIRIYOR
+  0.00 < 283 <= 0.52                             -0.0025   ↓ fail azalıyor
+
+Örnek 3  (test_idx=252, Fail Olasılığı=0.0418)
+--------------------------------------------------
+  59 > 0.55                                      +0.0084   ↑ FAIL ARTIRIYOR
+  117 > 0.49                                     -0.0047   ↓ fail azalıyor
+  0.00 < 130 <= 0.43                             +0.0045   ↑ FAIL ARTIRIYOR
+  197 > 0.47                                     +0.0036   ↑ FAIL ARTIRIYOR
+  419 > 0.52                                     -0.0034   ↓ fail azalıyor
+  56 <= -0.72                                    -0.0031   ↓ fail azalıyor
+  -0.51 < 563 <= 0.00                            +0.0027   ↑ FAIL ARTIRIYOR
+  0.00 < 105 <= 0.43                             +0.0027   ↑ FAIL ARTIRIYOR
+  351 > 0.48                                     -0.0026   ↓ fail azalıyor
+  213 > 0.47                                     +0.0026   ↑ FAIL ARTIRIYOR
+  250 > 0.51                                     +0.0023   ↑ FAIL ARTIRIYOR
+  -0.50 < 486 <= 0.00                            +0.0023   ↑ FAIL ARTIRIYOR
+  336 > 0.54                                     +0.0023   ↑ FAIL ARTIRIYOR
+  118 > 0.48                                     -0.0022   ↓ fail azalıyor
+  -0.41 < 460 <= 0.00                            -0.0022   ↓ fail azalıyor
+
