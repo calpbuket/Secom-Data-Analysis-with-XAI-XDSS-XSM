@@ -63,8 +63,8 @@ except ImportError:
 # SABİTLER
 # =============================================================================
 
-MODELS_DIR  = "/Users/umayyentur/Downloads/Buket/FinalKodlar/robust_pipeline_outputs/models"
-XAI_DIR     = "/Users/umayyentur/Downloads/Buket/FinalKodlar/xai_outputs"
+MODELS_DIR  = "robust_pipeline_outputs/models"
+XAI_DIR     = "xai_outputs"
 
 # 10.robust_multi_model_pipeline.py ile oluşturulan model isimleri
 MODEL_NAMES = ['XGBoost', 'LightGBM', 'RandomForest']
